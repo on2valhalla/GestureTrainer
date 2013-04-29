@@ -26,3 +26,7 @@ You also probably want to bookmark these two APIs that are fairly in depth:
 OPENCV:	http://docs.opencv.org/
 QT:		http://qt-project.org/doc/  (their search feature is good)
 
+
+sudo port updated outdated
+sudo port install gcc47
+sudo port install boost
