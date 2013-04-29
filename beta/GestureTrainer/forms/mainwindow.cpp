@@ -491,12 +491,33 @@ void MainWindow::on_pushButton_Detect_clicked()
 {
 	if(timer->isActive())
 		handDetect = !handDetect;
-	else if(!HandDetectController::getInstance()->inputIsEmpty())
+	else
 	{
+		// process the frame
+		SkinDetectController::getInstance()->process();
+
+		// retrieve the processed frame
+		cv::Mat blobs = SkinDetectController::getInstance()->getLastResult();
+		cv::Mat img = SkinDetectController::getInstance()->getInputImage();
+
+		// send HandDetector the processed frame
+		HandDetectController::getInstance()->setInputImages(img, blobs);
+
+		// find the hand blob and store
 		HandDetectController::getInstance()->findHand();
-		cv::Mat resulting = 
-						HandDetectController::getInstance()->getLastResult();
-		displayMat(resulting, ui->label_Camera);
+
+		// display hand ROI in small window
+		Hand lastHand = HandDetectController::getInstance()->getLastHand();
+		if(!lastHand.isNone())
+		{
+			cv::Mat handROI(img, lastHand.getBoundRect());
+			displayMat(handROI, ui->label_HandDisplay);
+		}
+
+		cv::Mat result = HandDetectController::getInstance()->getLastResult();
+		if (!result.empty())
+			img = result;
+		displayMat(result, ui->label_Camera);
 	}
 }
 
