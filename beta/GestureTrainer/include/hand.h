@@ -15,7 +15,7 @@
 
 #include <iostream>
 #include <string>
-#include <boost/lexical_cast.hpp>
+// #include <boost/lexical_cast.hpp>
 #include <algorithm>
 
 
@@ -35,7 +35,7 @@ private:
 
 	// contour and hull are 2d vectors for easy drawing
 	std::vector<std::vector<cv::Point> > contour;
-    std::vector<std::vector<cv::Point> > hull;
+	std::vector<std::vector<cv::Point> > hull;
 	cv::vector<cv::Vec4i> defects;
 	cv::RotatedRect rotRect;
 	cv::Point2f rotPoints[4];
@@ -65,7 +65,7 @@ public:
 	Hand(std::vector<cv::Point> c)
 	{
 		COLOR_CONTOUR = cv::Scalar(100,150,255);
-		COLOR_HULL = cv::Scalar(0,150,255);
+		COLOR_HULL = cv::Scalar(0,0,255);
 		COLOR_ROT_RECT = cv::Scalar(124,0,0);
 		COLOR_BD_RECT = cv::Scalar(0,124,0);
 
@@ -86,7 +86,7 @@ public:
 		// convex hull and defects
 		std::vector<std::vector<int> > hullIdxs;
 		hullIdxs.push_back(std::vector<int>());
-        cv::convexHull(cv::Mat(contour[0]), hullIdxs[0]);
+		cv::convexHull(cv::Mat(contour[0]), hullIdxs[0]);
 
 		// gather the hull points into a vector for drawing
 		hull = std::vector<std::vector<cv::Point> >(1);
@@ -217,14 +217,18 @@ public:
 		if(type == NONE)
 			return;
 
-		// draw connected component contour
+		// draw onto separate Mat for highlighter effect when added
 		cv::Mat contourImg(image.size(), image.type(), cv::Scalar(0));
-		// cv::drawContours( contourImg, contour, 0, 
-		// 					COLOR_CONTOUR, CV_FILLED, CV_AA);
-        cv::drawContours( contourImg, hull, 0,
+		cv::drawContours( contourImg, contour, 0, 
 							COLOR_CONTOUR, CV_FILLED, CV_AA);
-		// cv::GaussianBlur( contourImg, contourImg, cv::Size(3,3), 0);
+		cv::GaussianBlur( contourImg, contourImg, cv::Size(3,3), 0);
 		image += contourImg;
+
+		// Draw convex hull
+		cv::drawContours( image, hull, 0, COLOR_HULL, 5, CV_AA);
+
+
+
 
 		// // draw bounding rotated rectangles
 		// for( int j = 0; j < 4; j++ )
@@ -233,8 +237,8 @@ public:
 
 		// rectangle(image, boxRect, COLOR_BD_RECT, 3);
 
-        putText(image, boost::lexical_cast<std::string>(hull.size()), boxRect.br(),
-			cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
+		// putText(image, boost::lexical_cast<std::string>(mom.m00), boxRect.br(),
+			// cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
 
 
 	}
