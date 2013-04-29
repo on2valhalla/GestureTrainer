@@ -14,17 +14,16 @@
 
 cv::Mat HandDetector::findHand(const cv::Mat &colorImg, const cv::Mat &blobImg)
 {
-	resultImg.create( colorImg.rows, colorImg.cols, colorImg.type() );
+	resultImg = colorImg.clone();
 
 
 	//------------------Find Faces----------------
 	//preprocess for face recognition
-	char rszFactor = 4;
 	std::vector< cv::Rect > faces;
 	cv::Mat gray;
 	//shrink the image for speed
-	cv::resize(colorImg, gray, cv::Size2i(colorImg.cols/rszFactor, 
-											colorImg.rows/rszFactor));
+	cv::resize(resultImg, gray, cv::Size2i(resultImg.cols/4, 
+											resultImg.rows/4));
 	cv::cvtColor(gray, gray, CV_BGR2GRAY);
 	cv::equalizeHist(gray, gray);
 	cascadeFace.detectMultiScale(gray, faces);
@@ -33,11 +32,11 @@ cv::Mat HandDetector::findHand(const cv::Mat &colorImg, const cv::Mat &blobImg)
     for (unsigned int i = 0; i < faces.size(); i++ )
 	{
 		//resize the rectangle to match the img
-		faces[i] += cv::Point(faces[i].x * rszFactor,faces[i].y * rszFactor);
+		faces[i] += cv::Point(faces[i].x * 3,faces[i].y * 3);
 		// multiplication is not implemented for sizes...
-		faces[i] += faces[i].size() +faces[i].size() 
-					+faces[i].size() +faces[i].size();
-		rectangle(resultImg, faces[i], FACE_COLOR, rszFactor);
+		faces[i].width *= 4;
+		faces[i].height *= 5;
+		rectangle(resultImg, faces[i], FACE_COLOR, 3);
 	}
 	//----------------End Faces--------------------
 
@@ -57,7 +56,7 @@ cv::Mat HandDetector::findHand(const cv::Mat &colorImg, const cv::Mat &blobImg)
 
 
 	//------------------Find Largest Hand----------------
-    int maxMass = 0;
+    int maxMass = MIN_HAND_SIZE;
     Hand maxHand = Hand();
 
 	// iterate through all the top-level contours

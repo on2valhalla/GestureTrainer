@@ -43,6 +43,8 @@ private:
 	cv::Scalar FACE_COLOR = cv::Scalar(0,0,204),
 				HAND_COLOR = cv::Scalar(100,150,255);
 
+	const int MIN_HAND_SIZE = 5000;
+
 
 public:
 	//empty Constructor

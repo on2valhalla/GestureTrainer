@@ -137,6 +137,10 @@ public:
 	// on a cv::Mat that is provided
 	void drawHand(cv::Mat &image)
 	{
+		// No hand, don't draw
+		if(type == NONE)
+			return;
+
 		// draw connected component contour
 		cv::Mat contourImg(image.size(), image.type(), cv::Scalar(0));
 		cv::drawContours( contourImg, contours, 0, COLOR_CONTOUR, CV_FILLED, 8);
@@ -151,7 +155,7 @@ public:
 		rectangle(image, boxRect, COLOR_BD_RECT, 3);
 	}
 
-	
+
 //	END Utility Functions
 //##############################################################################
 

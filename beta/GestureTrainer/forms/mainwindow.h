@@ -34,6 +34,7 @@
 
 // Local Includes
 #include "../detectors/skindetectcontroller.h"	//singleton processes skin regions
+#include "../detectors/handdetectcontroller.h"	//singleton that finds hands
 #include "../include/colorhistogram.h"		//for displaying a 3 color histogram
 
 
@@ -115,6 +116,7 @@ private slots:
     void on_check_Erode_stateChanged(int state);
     void on_check_Dilate_stateChanged(int state);
     void on_check_Blur_stateChanged(int state);
+    void on_pushButton_Detect_clicked();
 };
 
 #endif // MAINWINDOW_H

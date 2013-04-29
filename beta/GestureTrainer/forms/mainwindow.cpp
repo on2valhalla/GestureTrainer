@@ -81,7 +81,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	//Hardcoded default HSV filter for home environment
 	min = cv::Scalar(0, 40, 93);
-	max = cv::Scalar(23, 255, 255);
+	max = cv::Scalar(20, 255, 255);
 	setSliders();
 }
 
@@ -254,15 +254,17 @@ void MainWindow::updateTimer()
 	cv::Mat img;
 	cap >> img; //capture a frame
 
-	//send SkinDetector the frame
-	SkinDetectController::getInstance()->setInputImage(img);
 	if(histEnable)
 	{   // update the histogram
 		histogram = cHist.getHistogramImage(img);
 		cv::imshow("Histogram", histogram);
 	}
 	if(backProcess)
-	{   //process the frame
+	{
+		//send SkinDetector the frame
+		SkinDetectController::getInstance()->setInputImage(img);
+
+		//process the frame
 		SkinDetectController::getInstance()->process();
 		
 		//retrieve the processed frame
@@ -272,10 +274,23 @@ void MainWindow::updateTimer()
 	}
 	if(handDetect)
 	{
+		// send SkinDetector the frame
+		SkinDetectController::getInstance()->setInputImage(img);
+
+		// process the frame
+		SkinDetectController::getInstance()->process();
+
+		// retrieve the processed frame
+		cv::Mat blobs = SkinDetectController::getInstance()->getLastResult();
+
+		// send HandDetector the processed frame
+        HandDetectController::getInstance()->setInputImages(img, blobs);
+
 		HandDetectController::getInstance()->findHand();
-		cv::Mat resulting = 
-						HandDetectController::getInstance()->getLastResult();
-		displayMat(resulting, ui->label_Camera);
+
+		cv::Mat result = HandDetectController::getInstance()->getLastResult();
+		if (!result.empty())
+			img = result;
 	}
 	displayMat(img, ui->label_Camera);
 }
@@ -467,7 +482,7 @@ void MainWindow::on_pushButton_Detect_clicked()
 {
 	if(timer->isActive())
 		handDetect = !handDetect;
-	else if(!HandDetectController::getInstance()->getInputImage().empty())
+    else if(!HandDetectController::getInstance()->inputIsEmpty())
 	{
 		HandDetectController::getInstance()->findHand();
 		cv::Mat resulting = 
