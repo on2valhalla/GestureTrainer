@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QLabel" name="label">
+   <widget class="QLabel" name="label_Camera">
     <property name="geometry">
      <rect>
       <x>570</x>
@@ -75,9 +75,9 @@
      <enum>QTabWidget::Triangular</enum>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
-    <widget class="QWidget" name="start">
+    <widget class="QWidget" name="tabStart">
      <attribute name="title">
       <string>Start</string>
      </attribute>
@@ -101,7 +101,7 @@
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="background">
+    <widget class="BackgroundWidget" name="tabBackground">
      <attribute name="title">
       <string>Background</string>
      </attribute>
@@ -459,57 +459,12 @@
        <string>Show Histogram</string>
       </property>
      </widget>
-     <zorder>label_Color5</zorder>
-     <zorder>label_MinValue</zorder>
-     <zorder>label_MaxValue</zorder>
-     <zorder>label_MinHue</zorder>
-     <zorder>label_Color1</zorder>
-     <zorder>label_MaxSat</zorder>
-     <zorder>label_MinSat</zorder>
-     <zorder>verticalSlider_MaxSat</zorder>
-     <zorder>label_Color6</zorder>
-     <zorder>label_Color2</zorder>
-     <zorder>verticalSlider_MaxValue</zorder>
-     <zorder>label_Max</zorder>
-     <zorder>label_Color4</zorder>
-     <zorder>verticalSlider_MinSat</zorder>
-     <zorder>label_Color3</zorder>
-     <zorder>verticalSlider_MinValue</zorder>
-     <zorder>line</zorder>
-     <zorder>verticalSlider_MinHue</zorder>
-     <zorder>label_MaxHue</zorder>
-     <zorder>label_Min</zorder>
-     <zorder>verticalSlider_MaxHue</zorder>
-     <zorder>label_Color5</zorder>
-     <zorder>label_MinValue</zorder>
-     <zorder>label_MaxValue</zorder>
-     <zorder>label_MinHue</zorder>
-     <zorder>label_Color1</zorder>
-     <zorder>label_MaxSat</zorder>
-     <zorder>label_MinSat</zorder>
-     <zorder>verticalSlider_MaxSat</zorder>
-     <zorder>label_Color6</zorder>
-     <zorder>label_Color2</zorder>
-     <zorder>verticalSlider_MaxValue</zorder>
-     <zorder>label_Max</zorder>
-     <zorder>label_Color4</zorder>
-     <zorder>verticalSlider_MinSat</zorder>
-     <zorder>label_Color3</zorder>
-     <zorder>verticalSlider_MinValue</zorder>
-     <zorder>line</zorder>
-     <zorder>verticalSlider_MinHue</zorder>
-     <zorder>label_MaxHue</zorder>
-     <zorder>label_Min</zorder>
-     <zorder>verticalSlider_MaxHue</zorder>
-     <zorder>line_3</zorder>
-     <zorder>pushButton_Process</zorder>
-     <zorder>pushButton_Histogram</zorder>
     </widget>
-    <widget class="QWidget" name="measure">
+    <widget class="QWidget" name="tabMeasure">
      <attribute name="title">
       <string>Measure Hand</string>
      </attribute>
-     <widget class="QLabel" name="label_4">
+     <widget class="QLabel" name="label_HandDisplay">
       <property name="geometry">
        <rect>
         <x>300</x>
@@ -555,6 +510,14 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>BackgroundWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">include/backgroundwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
