@@ -12,8 +12,10 @@
 
 
 
-cv::Mat HandDetector::findHand(const cv::Mat &colorImg, const cv::Mat &blobImg)
+cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
 {
+	if (blobImg.empty() || colorImg.empty())
+	  return cv::Mat();
 	resultImg = colorImg.clone();
 
 

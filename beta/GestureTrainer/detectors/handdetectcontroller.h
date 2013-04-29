@@ -73,10 +73,10 @@ class HandDetectController
 
 
 		// Sets the input blob image.
-		bool setInputImages(const cv::Mat &colorImage, const cv::Mat &blobImage)
+		bool setInputImages(cv::Mat colorImage, cv::Mat blobImage)
 		{
-			blobImg = blobImage.clone();
-			colorImg = colorImage.clone();
+			this->blobImg = blobImage;
+			this->colorImg = colorImage;
 
 			if (!blobImg.data || !colorImg.data)
 			  return false;
@@ -89,29 +89,29 @@ class HandDetectController
 			return colorImg.empty() && blobImg.empty();
 		}
 
-		cv::Mat getBlobImage()
+		const cv::Mat getBlobImage() const
 		{
 			return blobImg;
 		}
 
-		cv::Mat getColorImage()
+		const cv::Mat getColorImage() const
 		{
 			return colorImg;
 		}
 
-		cv::Mat getLastResult()
+		const cv::Mat getLastResult() const
 		{
 			return resultImg;
 		}
 
-		const Hand& getLastHand() const
+		const Hand getLastHand() const
 		{
 			return lastHand;
 		}
 
 		void findHand() 
 		{
-			if (!blobImg.data || !colorImg.data)
+			if (colorImg.empty() || blobImg.empty())
 			  return;
 			resultImg = handDetect->findHand(colorImg, blobImg);
 			lastHand = handDetect->getLastHand();

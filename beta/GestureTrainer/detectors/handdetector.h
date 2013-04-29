@@ -54,14 +54,14 @@ public:
 		cascadeFace = cv::CascadeClassifier(FACEFILE);
 	}
 
-	const Hand& getLastHand() const
+	const Hand& getLastHand()
 	{
 		return lastHand;
 	}
 
 	// Uses a binary image of blobs to find a hand and then overlays
 	// rectangles on the face and largest hand
-	cv::Mat findHand(const cv::Mat &colorImg, const cv::Mat &blobImg);
+	cv::Mat findHand(const cv::Mat colorImg, const cv::Mat blobImg);
 };
 
 #endif

@@ -57,6 +57,8 @@ public:
 	Hand()
 	{
 		type = NONE;
+		contour.push_back(std::vector<cv::Point>());
+		hull.push_back(std::vector<cv::Point>());
 	}
 
 	//Constructor
@@ -102,15 +104,13 @@ public:
 	//copy constructor
 	Hand(const Hand& h)
 	{
-		contour.clear();
 		contour.push_back(std::vector<cv::Point>());
 		for(cv::Point pt : h.contour[0])
 			contour[0].push_back(pt);
-		hull.clear();
 		hull.push_back(std::vector<cv::Point>());
 		for(cv::Point pt : h.hull[0])
 			hull[0].push_back(pt);
-		std::cout << "copy: " <<hull[0].size() << std::endl;
+		std::cout << "copy: " << hull[0].size() << std::endl;
 
 		type = h.type;
 
@@ -133,12 +133,14 @@ public:
 
 		contour.clear();
 		contour.push_back(std::vector<cv::Point>());
-		for(cv::Point pt : rhs.contour[0])
-			contour[0].push_back(pt);
+		if(rhs.contour.size() > 0)
+			for(const cv::Point& pt : rhs.contour[0])
+				contour[0].push_back(pt);
 		hull.clear();
 		hull.push_back(std::vector<cv::Point>());
-		for(cv::Point pt : rhs.hull[0])
-			hull[0].push_back(pt);
+		if(rhs.hull.size() > 0)
+			for(const cv::Point& pt : rhs.hull[0])
+				hull[0].push_back(pt);
 		std::cout << "copy: " <<hull[0].size() << std::endl;
 
 		type = rhs.type;
@@ -209,7 +211,7 @@ public:
 
 	// Draws all the relevant hand data (bounding and rotated rects, contour)
 	// on a cv::Mat that is provided
-	void drawHand(cv::Mat &image)
+	void drawHand(cv::Mat image)
 	{
 		// No hand, don't draw
 		if(type == NONE)
@@ -231,9 +233,8 @@ public:
 
 		// rectangle(image, boxRect, COLOR_BD_RECT, 3);
 
-		putText(image, boost::lexical_cast<std::string>(hull.size()), boxRect.br(),
+        putText(image, boost::lexical_cast<std::string>(hull.size()), boxRect.br(),
 			cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
-
 
 
 	}

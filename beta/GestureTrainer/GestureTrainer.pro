@@ -30,11 +30,11 @@ HEADERS  += forms/mainwindow.h \
 
 FORMS    +=  forms/mainwindow.ui
 
-INCLUDEPATH += /usr/local/include/
-LIBS += -L/usr/local/lib/ \
+INCLUDEPATH += /opt/local/include/
+LIBS += -L/opt/local/lib/ \
    -lopencv_core \
    -lopencv_highgui \
    -lopencv_imgproc \
    -lopencv_features2d \
    -lopencv_objdetect \
-   -lopencv_calib3d
+   -lopencv_calib3d \
