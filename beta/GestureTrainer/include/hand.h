@@ -65,7 +65,7 @@ public:
 	Hand(std::vector<cv::Point> c)
 	{
 		COLOR_CONTOUR = cv::Scalar(150,150,150);
-		COLOR_HULL = cv::Scalar(0,0,150);
+		COLOR_HULL = cv::Scalar(150,150,150);
 		COLOR_ROT_RECT = cv::Scalar(124,0,0);
 		COLOR_BD_RECT = cv::Scalar(0,124,0);
 
