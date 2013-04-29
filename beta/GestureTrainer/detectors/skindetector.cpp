@@ -9,8 +9,8 @@
 	masks to process an image for skin blobs in HSV colorspace
 */
 
-#include "../ext/skindetector.h"
-#include "../ext/colorhistogram.h"
+#include "skindetector.h"
+#include "../include/colorhistogram.h"
 
 /*
 	Processes an HSV image and returns a binary image

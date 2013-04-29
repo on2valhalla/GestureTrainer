@@ -19,7 +19,7 @@
 
 #include <iostream>
 
-#include "../ext/skindetector.h"
+#include "skindetector.h"
 
 class SkinDetectController
 {

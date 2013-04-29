@@ -32,8 +32,8 @@
 #include <opencv2/highgui/highgui.hpp>
 
 // Local Includes
-#include "../ext/skindetectcontroller.h"	//singleton processes skin regions
-#include "../ext/colorhistogram.h"		//for displaying a 3 color histogram
+#include "../detectors/skindetectcontroller.h"	//singleton processes skin regions
+#include "../include/colorhistogram.h"		//for displaying a 3 color histogram
 
 
 namespace Ui {

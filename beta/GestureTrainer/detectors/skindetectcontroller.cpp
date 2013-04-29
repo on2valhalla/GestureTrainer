@@ -1,3 +1,4 @@
+
 /*
 	Modified from ColorDetector from chapter 3 of the cookbook:
 	Computer Vision Programming using the OpenCV Library.
@@ -10,7 +11,7 @@
 	to its methods, and a local cache of the most recent images.
 */
 
-#include "../ext/skindetectcontroller.h"
+#include "skindetectcontroller.h"
 
 
 SkinDetectController *SkinDetectController::singleton=0;

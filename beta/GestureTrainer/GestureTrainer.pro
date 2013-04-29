@@ -14,12 +14,13 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
     forms/mainwindow.cpp \
-    ext/skindetectcontroller.cpp \
-    ext/skindetector.cpp
+    detectors/skindetector.cpp \
+    detectors/skindetectcontroller.cpp
 
 HEADERS  += forms/mainwindow.h \
-    ext/skindetector.h \
-    ext/skindetectcontroller.h
+    include/colorhistogram.h \
+    detectors/skindetector.h \
+    detectors/skindetectcontroller.h
 
 FORMS    +=  forms/mainwindow.ui
 
