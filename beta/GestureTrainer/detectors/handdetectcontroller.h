@@ -104,13 +104,15 @@ class HandDetectController
 			return resultImg;
 		}
 
-		const Hand getLastHand() const
+		const Hand& getLastHand() const
 		{
 			return lastHand;
 		}
 
 		void findHand() 
 		{
+			if (!blobImg.data || !colorImg.data)
+			  return;
 			resultImg = handDetect->findHand(colorImg, blobImg);
 			lastHand = handDetect->getLastHand();
 		}

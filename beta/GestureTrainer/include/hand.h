@@ -13,6 +13,11 @@
 
 #include <opencv2/core/core.hpp>
 
+#include <iostream>
+#include <string>
+#include <boost/lexical_cast.hpp>
+#include <algorithm>
+
 
 enum HandType{
 
@@ -27,18 +32,21 @@ class Hand
 private:
 	// VARIABLES
 	HandType type;
-	// contour is stored as a vector for easy drawing (drawContours typically
-	// pulls from the entire array of found contours)
-	std::vector<std::vector<cv::Point> > contours;
+
+	// contour and hull are 2d vectors for easy drawing
+	std::vector<std::vector<cv::Point> > contour;
+    std::vector<std::vector<cv::Point> > hull;
+	cv::vector<cv::Vec4i> defects;
 	cv::RotatedRect rotRect;
 	cv::Point2f rotPoints[4];
 	cv::Rect boxRect;
 	cv::Moments mom;
 
-	// CONSTANTS
-	cv::Scalar COLOR_CONTOUR = cv::Scalar(0,0,124),
-				COLOR_ROT_RECT = cv::Scalar(124,0,0),
-				COLOR_BD_RECT = cv::Scalar(0,124,0);
+	// COLORS
+	cv::Scalar COLOR_CONTOUR,
+				COLOR_HULL,
+				COLOR_ROT_RECT,
+				COLOR_BD_RECT;
 
 
 public:
@@ -54,28 +62,67 @@ public:
 	//Constructor
 	Hand(std::vector<cv::Point> c)
 	{
-		contours.clear();
-		contours.push_back(c);
+		COLOR_CONTOUR = cv::Scalar(100,150,255);
+		COLOR_HULL = cv::Scalar(0,150,255);
+		COLOR_ROT_RECT = cv::Scalar(124,0,0);
+		COLOR_BD_RECT = cv::Scalar(0,124,0);
 
-		//calculate the rotated and bounding rectangles of the blobs
-		rotRect = cv::minAreaRect( cv::Mat(contours[0]) );
+		type = UNK;
+
+		contour.push_back(c);
+
+		// min fit rectangle (rotated)
+		rotRect = cv::minAreaRect( cv::Mat(contour[0]) );
 		rotRect.points(rotPoints);
 
-		boxRect = rotRect.boundingRect();
+		// bounding rectangle of the hand
+		boxRect = boundingRect(contour[0]);
 
 		//calculate the moments of the hand
-		mom = cv::moments(cv::Mat(contours[0]));
+		mom = cv::moments(cv::Mat(contour[0]));
+
+		// convex hull and defects
+		std::vector<std::vector<int> > hullIdxs;
+		hullIdxs.push_back(std::vector<int>());
+        cv::convexHull(cv::Mat(contour[0]), hullIdxs[0]);
+
+		// gather the hull points into a vector for drawing
+		hull = std::vector<std::vector<cv::Point> >(1);
+		for(int i : hullIdxs[0])
+			hull[0].push_back(contour[0][i]);
+
+		std::cout << hull[0].size() << std::endl;
+
+		// defects
+		cv::convexityDefects(contour[0], hullIdxs[0], defects);
+
+
 	}
 
 	//copy constructor
 	Hand(const Hand& h)
 	{
+		contour.clear();
+		contour.push_back(std::vector<cv::Point>());
+		for(cv::Point pt : h.contour[0])
+			contour[0].push_back(pt);
+		hull.clear();
+		hull.push_back(std::vector<cv::Point>());
+		for(cv::Point pt : h.hull[0])
+			hull[0].push_back(pt);
+		std::cout << "copy: " <<hull[0].size() << std::endl;
+
 		type = h.type;
+
 		rotRect = h.rotRect;
 		for(unsigned int i = 0; i < sizeof(rotPoints); i++)
 			rotPoints[i] = h.rotPoints[i];
+
 		boxRect = h.boxRect;
+
 		mom = h.mom;
+
+		defects = h.defects;
 	}
 
 	//assignment operator
@@ -84,12 +131,29 @@ public:
 		if(this == &rhs)
 			return *this;
 
+		contour.clear();
+		contour.push_back(std::vector<cv::Point>());
+		for(cv::Point pt : rhs.contour[0])
+			contour[0].push_back(pt);
+		hull.clear();
+		hull.push_back(std::vector<cv::Point>());
+		for(cv::Point pt : rhs.hull[0])
+			hull[0].push_back(pt);
+		std::cout << "copy: " <<hull[0].size() << std::endl;
+
 		type = rhs.type;
+
 		rotRect = rhs.rotRect;
 		for(unsigned int i = 0; i < sizeof(rotPoints); i++)
 			rotPoints[i] = rhs.rotPoints[i];
+
 		boxRect = rhs.boxRect;
+
 		mom = rhs.mom;
+
+		defects = rhs.defects;
+
+
 		return *this;
 	}
 
@@ -108,9 +172,19 @@ public:
 //	Modifiers/Accessors
 
 	// Retrieve the moments of the Hand
-	cv::Moments getMoments()
+	const cv::Moments& getMoments()
 	{
 		return mom;
+	}
+
+	const cv::Rect& getBoundRect()
+	{
+		return boxRect;
+	}
+
+	bool isNone()
+	{
+		return type == NONE;
 	}
 
 //	END Modifiers/Accessors
@@ -143,16 +217,25 @@ public:
 
 		// draw connected component contour
 		cv::Mat contourImg(image.size(), image.type(), cv::Scalar(0));
-		cv::drawContours( contourImg, contours, 0, COLOR_CONTOUR, CV_FILLED, 8);
-		cv::GaussianBlur( contourImg, contourImg, cv::Size(3,3), 0);
+		// cv::drawContours( contourImg, contour, 0, 
+		// 					COLOR_CONTOUR, CV_FILLED, CV_AA);
+        cv::drawContours( contourImg, hull, 0,
+							COLOR_CONTOUR, CV_FILLED, CV_AA);
+		// cv::GaussianBlur( contourImg, contourImg, cv::Size(3,3), 0);
 		image += contourImg;
 
-		// draw bounding rotated rectangles
-		for( int j = 0; j < 4; j++ )
-			line( image, rotPoints[j], rotPoints[(j+1)%4],
-					COLOR_ROT_RECT, 3, 8 );
+		// // draw bounding rotated rectangles
+		// for( int j = 0; j < 4; j++ )
+		// 	line( image, rotPoints[j], rotPoints[(j+1)%4],
+		// 			COLOR_ROT_RECT, 3, CV_AA );
 
-		rectangle(image, boxRect, COLOR_BD_RECT, 3);
+		// rectangle(image, boxRect, COLOR_BD_RECT, 3);
+
+		putText(image, boost::lexical_cast<std::string>(hull.size()), boxRect.br(),
+			cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
+
+
+
 	}
 
 

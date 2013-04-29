@@ -29,7 +29,7 @@ cv::Mat HandDetector::findHand(const cv::Mat &colorImg, const cv::Mat &blobImg)
 	cascadeFace.detectMultiScale(gray, faces);
 
 	// draw bounds for faces
-    for (unsigned int i = 0; i < faces.size(); i++ )
+	for (unsigned int i = 0; i < faces.size(); i++ )
 	{
 		//resize the rectangle to match the img
 		faces[i] += cv::Point(faces[i].x * 3,faces[i].y * 3);
@@ -56,16 +56,16 @@ cv::Mat HandDetector::findHand(const cv::Mat &colorImg, const cv::Mat &blobImg)
 
 
 	//------------------Find Largest Hand----------------
-    int maxMass = MIN_HAND_SIZE;
-    Hand maxHand = Hand();
+	int maxMass = 0;
+	Hand maxHand = Hand();
 
 	// iterate through all the top-level contours
 	int idx = 0;
 	for( ; idx >= 0; idx = hierarchy[idx][0] )
-    {
-        // find if current contour intersects with a face
+	{
+		// find if current contour intersects with a face
 		bool faceOverlap = false;
-        for(unsigned int i = 0; i < faces.size(); i++)
+		for(unsigned int i = 0; i < faces.size(); i++)
 		{
 			for(cv::Point p : contours[idx])
 			{
@@ -79,12 +79,11 @@ cv::Mat HandDetector::findHand(const cv::Mat &colorImg, const cv::Mat &blobImg)
 			continue;
 
 		// Find the largest contour
-		Hand curHand(contours[idx]);
-		int curMass = curHand.getMoments().m00;
-		if(curMass > maxMass)
+		int curMass = (int)cv::moments( cv::Mat(contours[idx]) ).m00;
+		if(curMass > MIN_HAND_SIZE && curMass > maxMass)
 		{
 			maxMass = curMass;
-			maxHand = curHand;
+			maxHand = Hand(contours[idx]);
 		}
 	}
 

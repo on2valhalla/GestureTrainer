@@ -24,6 +24,10 @@
 static std::string FACEFILE = 
 	"/opt/local/share/OpenCV/haarcascades/haarcascade_frontalface_alt_tree.xml";
 
+// Constants
+static cv::Scalar FACE_COLOR = cv::Scalar(0,0,204),
+				HAND_COLOR = cv::Scalar(100,150,255);
+
 
 class HandDetector
 {
@@ -39,11 +43,8 @@ private:
 	// HAAR Cascade for detecting faces
 	cv::CascadeClassifier cascadeFace;
 
-	// Constants
-	cv::Scalar FACE_COLOR = cv::Scalar(0,0,204),
-				HAND_COLOR = cv::Scalar(100,150,255);
 
-	const int MIN_HAND_SIZE = 5000;
+	static const int MIN_HAND_SIZE = 2000;
 
 
 public:
@@ -53,7 +54,7 @@ public:
 		cascadeFace = cv::CascadeClassifier(FACEFILE);
 	}
 
-	const Hand getLastHand() const
+	const Hand& getLastHand() const
 	{
 		return lastHand;
 	}

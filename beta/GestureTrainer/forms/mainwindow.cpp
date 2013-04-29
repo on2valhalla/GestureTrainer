@@ -32,9 +32,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	// setup and display form
 	ui->setupUi(this);
-    ui->tabWidget->setCurrentIndex(0);
+	ui->tabWidget->setCurrentIndex(0);
 	//set up timer for camera display
-    timer = new QTimer(this);
+	timer = new QTimer(this);
 
 
 
@@ -69,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	//get camera
 	cap.open(CAMERA);
 	// check if we succeeded, if not do not enable camera toggle
-    if(!cap.isOpened())
+	if(!cap.isOpened())
 		ui->pushButton_Camera->setEnabled(false);
 	//end setup video ---------------
 
@@ -284,9 +284,18 @@ void MainWindow::updateTimer()
 		cv::Mat blobs = SkinDetectController::getInstance()->getLastResult();
 
 		// send HandDetector the processed frame
-        HandDetectController::getInstance()->setInputImages(img, blobs);
+		HandDetectController::getInstance()->setInputImages(img, blobs);
 
+		// find the hand blob and store
 		HandDetectController::getInstance()->findHand();
+
+		// display hand ROI in small window
+		Hand lastHand = HandDetectController::getInstance()->getLastHand();
+		if(!lastHand.isNone())
+		{
+			cv::Mat handROI(img, lastHand.getBoundRect());
+			displayMat(handROI, ui->label_HandDisplay);
+		}
 
 		cv::Mat result = HandDetectController::getInstance()->getLastResult();
 		if (!result.empty())
@@ -309,7 +318,7 @@ void MainWindow::processColorDetection()
 {
 	if(timer->isActive())
 		backProcess = !backProcess;
-    else if(!SkinDetectController::getInstance()->getHSVImage().empty())
+	else if(!SkinDetectController::getInstance()->getHSVImage().empty())
 	{
 		SkinDetectController::getInstance()->process();
 		cv::Mat resulting = 
@@ -416,14 +425,14 @@ void MainWindow::setMaxValue(int value)
 */
 void MainWindow::on_check_Invert_stateChanged(int state)
 {
-    if(state == Qt::Checked)
-    {
-        SkinDetectController::getInstance()->setInvert(true);
-    }
-    else
-    {
-        SkinDetectController::getInstance()->setInvert(false);
-    }
+	if(state == Qt::Checked)
+	{
+		SkinDetectController::getInstance()->setInvert(true);
+	}
+	else
+	{
+		SkinDetectController::getInstance()->setInvert(false);
+	}
 }
 
 /*
@@ -431,14 +440,14 @@ void MainWindow::on_check_Invert_stateChanged(int state)
 */
 void MainWindow::on_check_Erode_stateChanged(int state)
 {
-    if(state == Qt::Checked)
-    {
-        SkinDetectController::getInstance()->setErode(true);
-    }
-    else
-    {
-        SkinDetectController::getInstance()->setErode(false);
-    }
+	if(state == Qt::Checked)
+	{
+		SkinDetectController::getInstance()->setErode(true);
+	}
+	else
+	{
+		SkinDetectController::getInstance()->setErode(false);
+	}
 }
 
 /*
@@ -446,14 +455,14 @@ void MainWindow::on_check_Erode_stateChanged(int state)
 */
 void MainWindow::on_check_Dilate_stateChanged(int state)
 {
-    if(state == Qt::Checked)
-    {
-        SkinDetectController::getInstance()->setDilate(true);
-    }
-    else
-    {
-        SkinDetectController::getInstance()->setDilate(false);
-    }
+	if(state == Qt::Checked)
+	{
+		SkinDetectController::getInstance()->setDilate(true);
+	}
+	else
+	{
+		SkinDetectController::getInstance()->setDilate(false);
+	}
 }
 
 /*
@@ -461,14 +470,14 @@ void MainWindow::on_check_Dilate_stateChanged(int state)
 */
 void MainWindow::on_check_Blur_stateChanged(int state)
 {
-    if(state == Qt::Checked)
-    {
-        SkinDetectController::getInstance()->setBlur(true);
-    }
-    else
-    {
-        SkinDetectController::getInstance()->setBlur(false);
-    }
+	if(state == Qt::Checked)
+	{
+		SkinDetectController::getInstance()->setBlur(true);
+	}
+	else
+	{
+		SkinDetectController::getInstance()->setBlur(false);
+	}
 }
 
 
@@ -476,13 +485,13 @@ void MainWindow::on_check_Blur_stateChanged(int state)
 //---------Hand Buttons--------------
 
 /*
-    Begin/Stop Hand detection
+	Begin/Stop Hand detection
 */
 void MainWindow::on_pushButton_Detect_clicked()
 {
 	if(timer->isActive())
 		handDetect = !handDetect;
-    else if(!HandDetectController::getInstance()->inputIsEmpty())
+	else if(!HandDetectController::getInstance()->inputIsEmpty())
 	{
 		HandDetectController::getInstance()->findHand();
 		cv::Mat resulting = 
