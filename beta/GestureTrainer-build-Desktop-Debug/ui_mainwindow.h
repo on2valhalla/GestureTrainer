@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Sat Apr 27 22:35:39 2013
+** Created: Sun Apr 28 20:29:42 2013
 **      by: Qt User Interface Compiler version 4.8.4
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -14,6 +14,7 @@
 #include <QtGui/QAction>
 #include <QtGui/QApplication>
 #include <QtGui/QButtonGroup>
+#include <QtGui/QCheckBox>
 #include <QtGui/QFrame>
 #include <QtGui/QHeaderView>
 #include <QtGui/QLabel>
@@ -25,7 +26,6 @@
 #include <QtGui/QTextBrowser>
 #include <QtGui/QToolBar>
 #include <QtGui/QWidget>
-#include <include/backgroundwidget.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -39,7 +39,7 @@ public:
     QTabWidget *tabWidget;
     QWidget *tabStart;
     QLabel *label_2;
-    BackgroundWidget *tabBackground;
+    QWidget *tabBackground;
     QLabel *label_Color5;
     QLabel *label_MinValue;
     QLabel *label_MaxValue;
@@ -64,6 +64,10 @@ public:
     QFrame *line_3;
     QPushButton *pushButton_Process;
     QPushButton *pushButton_Histogram;
+    QCheckBox *check_Invert;
+    QCheckBox *check_Erode;
+    QCheckBox *check_Dilate;
+    QCheckBox *check_Blur;
     QWidget *tabMeasure;
     QLabel *label_HandDisplay;
     QTextBrowser *textBrowser;
@@ -101,7 +105,7 @@ public:
         label_2->setTextFormat(Qt::RichText);
         label_2->setWordWrap(true);
         tabWidget->addTab(tabStart, QString());
-        tabBackground = new BackgroundWidget();
+        tabBackground = new QWidget();
         tabBackground->setObjectName(QString::fromUtf8("tabBackground"));
         label_Color5 = new QLabel(tabBackground);
         label_Color5->setObjectName(QString::fromUtf8("label_Color5"));
@@ -199,6 +203,21 @@ public:
         pushButton_Histogram = new QPushButton(tabBackground);
         pushButton_Histogram->setObjectName(QString::fromUtf8("pushButton_Histogram"));
         pushButton_Histogram->setGeometry(QRect(380, 50, 131, 51));
+        check_Invert = new QCheckBox(tabBackground);
+        check_Invert->setObjectName(QString::fromUtf8("check_Invert"));
+        check_Invert->setGeometry(QRect(400, 120, 87, 20));
+        check_Erode = new QCheckBox(tabBackground);
+        check_Erode->setObjectName(QString::fromUtf8("check_Erode"));
+        check_Erode->setGeometry(QRect(400, 150, 87, 20));
+        check_Erode->setChecked(true);
+        check_Dilate = new QCheckBox(tabBackground);
+        check_Dilate->setObjectName(QString::fromUtf8("check_Dilate"));
+        check_Dilate->setGeometry(QRect(400, 180, 87, 20));
+        check_Dilate->setChecked(true);
+        check_Blur = new QCheckBox(tabBackground);
+        check_Blur->setObjectName(QString::fromUtf8("check_Blur"));
+        check_Blur->setGeometry(QRect(400, 210, 87, 20));
+        check_Blur->setChecked(true);
         tabWidget->addTab(tabBackground, QString());
         tabMeasure = new QWidget();
         tabMeasure->setObjectName(QString::fromUtf8("tabMeasure"));
@@ -222,7 +241,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        tabWidget->setCurrentIndex(2);
+        tabWidget->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -252,6 +271,10 @@ public:
         label_Min->setText(QApplication::translate("MainWindow", "Min HSV", 0, QApplication::UnicodeUTF8));
         pushButton_Process->setText(QApplication::translate("MainWindow", "Process", 0, QApplication::UnicodeUTF8));
         pushButton_Histogram->setText(QApplication::translate("MainWindow", "Show Histogram", 0, QApplication::UnicodeUTF8));
+        check_Invert->setText(QApplication::translate("MainWindow", "Invert", 0, QApplication::UnicodeUTF8));
+        check_Erode->setText(QApplication::translate("MainWindow", "Erode", 0, QApplication::UnicodeUTF8));
+        check_Dilate->setText(QApplication::translate("MainWindow", "Dilate", 0, QApplication::UnicodeUTF8));
+        check_Blur->setText(QApplication::translate("MainWindow", "Blur", 0, QApplication::UnicodeUTF8));
         tabWidget->setTabText(tabWidget->indexOf(tabBackground), QApplication::translate("MainWindow", "Background", 0, QApplication::UnicodeUTF8));
         label_HandDisplay->setText(QString());
         tabWidget->setTabText(tabWidget->indexOf(tabMeasure), QApplication::translate("MainWindow", "Measure Hand", 0, QApplication::UnicodeUTF8));

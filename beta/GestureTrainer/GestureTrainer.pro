@@ -18,7 +18,6 @@ SOURCES += main.cpp\
     ext/skindetector.cpp
 
 HEADERS  += forms/mainwindow.h \
-    include/backgroundwidget.h \
     ext/skindetector.h \
     ext/skindetectcontroller.h
 

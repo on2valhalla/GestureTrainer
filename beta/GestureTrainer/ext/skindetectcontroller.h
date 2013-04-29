@@ -114,9 +114,29 @@ class SkinDetectController
 			return resultImg;
 		}
 
-		void setThreshold(cv::Scalar min, cv::Scalar max)
+		void setThreshold(cv::Scalar &min, cv::Scalar &max)
 		{
 			sknDetect->setThreshold(min, max);
+		}
+
+		void setInvert(bool set)
+		{
+			sknDetect->setInvert(set);
+		}
+
+		void setErode(bool set)
+		{
+			sknDetect->setErode(set);
+		}
+
+		void setDilate(bool set)
+		{
+			sknDetect->setDilate(set);
+		}
+
+		void setBlur(bool set)
+		{
+			sknDetect->setBlur(set);
 		}
 
 		void process() 

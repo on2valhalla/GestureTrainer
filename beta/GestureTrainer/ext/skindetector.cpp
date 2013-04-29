@@ -39,10 +39,14 @@ cv::Mat SkinDetector::processHSV(const cv::Mat &hsvImg)
 
 	//current morphological processing functions to 
 	//close the skin blobs
-    //cv::bitwise_not(resultImg, resultImg);
-    cv::erode(resultImg, resultImg, morpElement);
-    cv::dilate(resultImg, resultImg, morpElement);
-    cv::blur(resultImg, resultImg, morpElement.size());
+	if(invert)
+	    cv::bitwise_not(resultImg, resultImg);
+	if(erode)
+	    cv::erode(resultImg, resultImg, morpElement);
+	if(dilate)
+	    cv::dilate(resultImg, resultImg, morpElement);
+	if(blur)
+	    cv::blur(resultImg, resultImg, morpElement.size());
     
 
 	//optional morphological processing is helpful

@@ -23,6 +23,7 @@
 
 // QT Includes
 #include <QMainWindow>
+#include <QCheckBox>
 #include <QFileDialog>
 #include <QTimer>
 
@@ -110,6 +111,10 @@ private slots:
 	void setMaxSat(int value);
 	void setMaxValue(int value);
 
+    void on_check_Invert_stateChanged(int state);
+    void on_check_Erode_stateChanged(int state);
+    void on_check_Dilate_stateChanged(int state);
+    void on_check_Blur_stateChanged(int state);
 };
 
 #endif // MAINWINDOW_H

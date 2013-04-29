@@ -32,6 +32,9 @@ class SkinDetector
 		// image containing converted color space
 		cv::Mat converted;
 
+		// bools for morphological filtering
+		bool invert, erode, dilate, blur;
+
 
 	public:
 		//empty Constructor
@@ -44,6 +47,44 @@ class SkinDetector
 			hsvThreshold[1][0] = 180;
 			hsvThreshold[1][1] = 255;
 			hsvThreshold[1][2] = 255;
+			erode = dilate = blur = true;
+			invert = false;
+		}
+
+		void setInvert(bool set)
+		{
+			invert = set;
+		}
+		bool getInvert()
+		{
+			return invert;
+		}
+
+		void setErode(bool set)
+		{
+			erode = set;
+		}
+		bool getErode()
+		{
+			return erode;
+		}
+
+		void setDilate(bool set)
+		{
+			dilate = set;
+		}
+		bool getDilate()
+		{
+			return dilate;
+		}
+
+		void setBlur(bool set)
+		{
+			blur = set;
+		}
+		bool getBlur()
+		{
+			return blur;
 		}
 
         void setThreshold(cv::Scalar min, cv::Scalar max)

@@ -32,28 +32,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	// setup and display form
 	ui->setupUi(this);
-
-
-	//set up video ------------------
-	//get camera
-	cap.open(CAMERA);
-	// check if we succeeded, if not do not enable camera toggle
-    if(!cap.isOpened())
-		ui->pushButton_Camera->setEnabled(false);
+    ui->tabWidget->setCurrentIndex(0);
 	//set up timer for camera display
     timer = new QTimer(this);
-	//end setup video ---------------
 
-
-	//default settings
-	process = false;
-	histEnable = false;
-	cHist = ColorHistogram();
-
-	//Hardcoded default HSV filter for home environment
-	min = cv::Scalar(0, 40, 93);
-	max = cv::Scalar(23, 255, 255);
-	setSliders();
 
 
 	// connect slot action methods ----------
@@ -82,6 +64,25 @@ MainWindow::MainWindow(QWidget *parent) :
 				this, SLOT(setMaxValue(int)));
 	//end slots------------------------------
 
+
+	//set up video ------------------
+	//get camera
+	cap.open(CAMERA);
+	// check if we succeeded, if not do not enable camera toggle
+    if(!cap.isOpened())
+		ui->pushButton_Camera->setEnabled(false);
+	//end setup video ---------------
+
+
+	//default settings
+	process = false;
+	histEnable = false;
+	cHist = ColorHistogram();
+
+	//Hardcoded default HSV filter for home environment
+	min = cv::Scalar(0, 40, 93);
+	max = cv::Scalar(23, 255, 255);
+	setSliders();
 }
 
 MainWindow::~MainWindow()
@@ -280,13 +281,12 @@ void MainWindow::processColorDetection()
 {
 	if(timer->isActive())
 		process = !process;
-	else
+    else if(!SkinDetectController::getInstance()->getHSVImage().empty())
 	{
 		SkinDetectController::getInstance()->process();
 		cv::Mat resulting = 
 						SkinDetectController::getInstance()->getLastResult();
-		if (!resulting.empty())
-			displayMat(resulting);
+		displayMat(resulting);
 	}
 }
 
@@ -377,6 +377,67 @@ void MainWindow::setMaxValue(int value)
 	setThreshold();
 }
 
+/*
+	Sets the invert morphological filter on or off based on the checkbox
+*/
+void MainWindow::on_check_Invert_stateChanged(int state)
+{
+    if(state == Qt::Checked)
+    {
+        SkinDetectController::getInstance()->setInvert(true);
+    }
+    else
+    {
+        SkinDetectController::getInstance()->setInvert(false);
+    }
+}
+
+/*
+	Sets the erode morphological filter on or off based on the checkbox
+*/
+void MainWindow::on_check_Erode_stateChanged(int state)
+{
+    if(state == Qt::Checked)
+    {
+        SkinDetectController::getInstance()->setErode(true);
+    }
+    else
+    {
+        SkinDetectController::getInstance()->setErode(false);
+    }
+}
+
+/*
+	Sets the dilate morphological filter on or off based on the checkbox
+*/
+void MainWindow::on_check_Dilate_stateChanged(int state)
+{
+    if(state == Qt::Checked)
+    {
+        SkinDetectController::getInstance()->setDilate(true);
+    }
+    else
+    {
+        SkinDetectController::getInstance()->setDilate(false);
+    }
+}
+
+/*
+	Sets the blur morphological filter on or off based on the checkbox
+*/
+void MainWindow::on_check_Blur_stateChanged(int state)
+{
+    if(state == Qt::Checked)
+    {
+        SkinDetectController::getInstance()->setBlur(true);
+    }
+    else
+    {
+        SkinDetectController::getInstance()->setBlur(false);
+    }
+}
+
 
 // END Slots
 //##############################################################################
+
