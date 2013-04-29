@@ -7,6 +7,7 @@
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QMAKE_CXXFLAGS = -fpermissive -std=c++11
 
 TARGET = GestureTrainer
 TEMPLATE = app
@@ -15,12 +16,17 @@ TEMPLATE = app
 SOURCES += main.cpp\
     forms/mainwindow.cpp \
     detectors/skindetector.cpp \
-    detectors/skindetectcontroller.cpp
+    detectors/skindetectcontroller.cpp \
+    detectors/handdetectcontroller.cpp \
+    detectors/handdetector.cpp
 
 HEADERS  += forms/mainwindow.h \
     include/colorhistogram.h \
     detectors/skindetector.h \
-    detectors/skindetectcontroller.h
+    detectors/skindetectcontroller.h \
+    detectors/handdetectcontroller.h \
+    detectors/handdetector.h \
+    include/hand.h
 
 FORMS    +=  forms/mainwindow.ui
 

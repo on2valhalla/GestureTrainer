@@ -24,6 +24,7 @@
 // QT Includes
 #include <QMainWindow>
 #include <QCheckBox>
+#include <QLabel>
 #include <QFileDialog>
 #include <QTimer>
 
@@ -53,7 +54,7 @@ public:
 	
 protected:
 	// Utilities
-	void displayMat(const cv::Mat& img);
+    void displayMat(const cv::Mat& img, QLabel *label);
 
 	// UI Functions
 	void setSliders();
@@ -69,8 +70,7 @@ private:
 
 	// timer vars
 	QTimer *timer;
-	bool process;
-	bool histEnable;
+	bool backProcess, histEnable, handDetect;
 
 	// thresholding masks
 	cv::Scalar min, max;

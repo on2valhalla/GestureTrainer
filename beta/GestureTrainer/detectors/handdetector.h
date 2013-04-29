@@ -13,6 +13,7 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/objdetect/objdetect.hpp>
 
 #include <iostream>
 #include <string>
@@ -39,8 +40,8 @@ private:
 	cv::CascadeClassifier cascadeFace;
 
 	// Constants
-	const cv::Scalar FACE_COLOR(0,0,204);
-	const cv::Scalar HAND_COLOR(100,150,255);
+	cv::Scalar FACE_COLOR = cv::Scalar(0,0,204),
+				HAND_COLOR = cv::Scalar(100,150,255);
 
 
 public:

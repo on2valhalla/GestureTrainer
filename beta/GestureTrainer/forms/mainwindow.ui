@@ -557,6 +557,19 @@
        </rect>
       </property>
      </widget>
+     <widget class="QPushButton" name="pushButton_Detect">
+      <property name="geometry">
+       <rect>
+        <x>300</x>
+        <y>230</y>
+        <width>201</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Detect Hand</string>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>

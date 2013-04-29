@@ -34,9 +34,10 @@ class HandDetectController
 		// Image storage of binary blobs, and original color image
 		cv::Mat blobImg;
 		cv::Mat colorImg;
+        cv::Mat resultImg;
 
 		// Last output ROI containing hand
-		Hand rectHand;
+        Hand lastHand;
 
 	public:
 		HandDetectController()
@@ -72,10 +73,10 @@ class HandDetectController
 
 
 		// Sets the input blob image.
-		bool setInputImages(const cv::Mat &colorImg, const cv::Mat &blobImg)
+        bool setInputImages(const cv::Mat &colorImage, const cv::Mat &blobImage)
 		{
-			blobImg = blobImg.clone();
-			colorImg = colorImg.clone();
+            blobImg = blobImage.clone();
+            colorImg = colorImage.clone();
 
 			if (!blobImg.data || !colorImg.data)
 			  return false;
@@ -83,19 +84,29 @@ class HandDetectController
 			  return true;
 		}
 
-		cv::Mat getInputImage()
+		cv::Mat getBlobImage()
 		{
 			return blobImg;
 		}
 
-		const cv::Mat getLastHand() const
+		cv::Mat getColorImage()
+		{
+			return colorImg;
+		}
+
+		cv::Mat getResultImage()
+		{
+			return resultImg;
+		}
+
+        const Hand getLastHand() const
 		{
 			return lastHand;
 		}
 
 		void findHand() 
 		{
-			resultImg = handDetect->findHand(colorImg;, blobImg);
+            resultImg = handDetect->findHand(colorImg, blobImg);
 			lastHand = handDetect->getLastHand();
 		}
 

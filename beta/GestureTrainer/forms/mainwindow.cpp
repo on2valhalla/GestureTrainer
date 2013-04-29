@@ -75,8 +75,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 	//default settings
-	process = false;
-	histEnable = false;
+	backProcess = histEnable = handDetect = false;
+
 	cHist = ColorHistogram();
 
 	//Hardcoded default HSV filter for home environment
@@ -103,7 +103,7 @@ MainWindow::~MainWindow()
 	A simple conversion method to display a cv::Mat image (BGR or binary)
 	in a QLabel, that only takes a QImage as a pixelmap.
 */
-void MainWindow::displayMat(const cv::Mat& image)
+void MainWindow::displayMat(const cv::Mat& image, QLabel *label)
 {
 	//BGR openCV Mat to QImage
 	QImage img_qt = QImage((const unsigned char*)image.data,image.cols,
@@ -124,8 +124,7 @@ void MainWindow::displayMat(const cv::Mat& image)
 
 	//Display the QImage in the Label
 	QPixmap img_pix = QPixmap::fromImage(img_qt.rgbSwapped()); //BGR to RGB
-	this->ui->label_Camera->setPixmap(
-						img_pix.scaled(ui->label_Camera->size(), Qt::KeepAspectRatio));
+	label->setPixmap(img_pix.scaled(label->size(), Qt::KeepAspectRatio));
 }
 
 //	END Utility Functions
@@ -157,7 +156,7 @@ void MainWindow::setSliders()
 void MainWindow::setThreshold()
 {
 	SkinDetectController::getInstance()->setThreshold(min, max);
-	if(!timer->isActive() && process)
+	if(!timer->isActive() && backProcess)
 		processColorDetection();
 }
 
@@ -168,6 +167,9 @@ void MainWindow::setThreshold()
 //##############################################################################
 //	Slots
 
+
+//---------Main Form Slots--------------
+
 /*
 	Change in tabs, so adjust display related variables
 	to show the correct image
@@ -177,13 +179,15 @@ void MainWindow::on_tabWidget_currentChanged(int index)
 	switch(index)
 	{
 		case START_TAB:
-			process = false;
+			backProcess = false;
 			histEnable = false;
+			handDetect = false;
 			break;
 		case BACKGROUND_TAB:
+			handDetect = false;
 			break;
 		case MEASURE_TAB:
-			process = false;
+			backProcess = false;
 			histEnable = false;
 			break;
 		default:
@@ -209,7 +213,7 @@ void MainWindow::setImage()
 								options);
 	if (!fileName.isEmpty()){
 		cv::Mat image = cv::imread(fileName.toStdString(),1); //0 for grayscale
-		displayMat(image);
+		displayMat(image, ui->label_Camera);
 		//Send Filename to the skin detector
 		SkinDetectController::getInstance()->setInputImage(fileName.toStdString());
 	}
@@ -238,7 +242,7 @@ void MainWindow::toggleCamera()
 }
 
 
-
+//---------Timer--------------
 
 /*
 	Controls the display of the video, on the interval set in
@@ -257,7 +261,7 @@ void MainWindow::updateTimer()
 		histogram = cHist.getHistogramImage(img);
 		cv::imshow("Histogram", histogram);
 	}
-	if(process)
+	if(backProcess)
 	{   //process the frame
 		SkinDetectController::getInstance()->process();
 		
@@ -266,11 +270,20 @@ void MainWindow::updateTimer()
 		if (!result.empty())
 			img = result;
 	}
-	displayMat(img);
+	if(handDetect)
+	{
+		HandDetectController::getInstance()->findHand();
+		cv::Mat resulting = 
+						HandDetectController::getInstance()->getLastResult();
+		displayMat(resulting, ui->label_Camera);
+	}
+	displayMat(img, ui->label_Camera);
 }
 
 
 
+
+//---------Background Buttons--------------
 
 /*
 	Called by the process button, this method toggles the processing 
@@ -280,13 +293,13 @@ void MainWindow::updateTimer()
 void MainWindow::processColorDetection()
 {
 	if(timer->isActive())
-		process = !process;
+		backProcess = !backProcess;
     else if(!SkinDetectController::getInstance()->getHSVImage().empty())
 	{
 		SkinDetectController::getInstance()->process();
 		cv::Mat resulting = 
 						SkinDetectController::getInstance()->getLastResult();
-		displayMat(resulting);
+		displayMat(resulting, ui->label_Camera);
 	}
 }
 
@@ -316,6 +329,8 @@ void MainWindow::showHistogram()
 
 
 
+
+//---------Filter Sliders--------------
 
 /*
 	Changes minimum Hue from slider
@@ -376,6 +391,10 @@ void MainWindow::setMaxValue(int value)
 	this->ui->label_MaxValue->setText(QString::number(value));
 	setThreshold();
 }
+
+
+
+//---------Morpho Checkboxes--------------
 
 /*
 	Sets the invert morphological filter on or off based on the checkbox
@@ -438,6 +457,27 @@ void MainWindow::on_check_Blur_stateChanged(int state)
 }
 
 
+
+//---------Hand Buttons--------------
+
+/*
+    Begin/Stop Hand detection
+*/
+void MainWindow::on_pushButton_Detect_clicked()
+{
+	if(timer->isActive())
+		handDetect = !handDetect;
+	else if(!HandDetectController::getInstance()->getInputImage().empty())
+	{
+		HandDetectController::getInstance()->findHand();
+		cv::Mat resulting = 
+						HandDetectController::getInstance()->getLastResult();
+		displayMat(resulting, ui->label_Camera);
+	}
+}
+
+
 // END Slots
 //##############################################################################
+
 

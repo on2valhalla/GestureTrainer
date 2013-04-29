@@ -11,14 +11,12 @@
 #ifndef HAND_H
 #define HAND_H
 
-#include "../src/gesturedetector.h"
 #include <opencv2/core/core.hpp>
 
 
 enum HandType{
-	FIST,
-	PALM,
-	POINT,
+
+	//FILL IN MORE TYPES AS WE FIGURE THEM OUT
 	UNK,
 	NONE
 };
@@ -26,86 +24,26 @@ enum HandType{
 class Hand
 {
 
-public:
+private:
 	// VARIABLES
-    HandType type;
+	HandType type;
+	// contour is stored as a vector for easy drawing (drawContours typically
+	// pulls from the entire array of found contours)
+	std::vector<std::vector<cv::Point> > contours;
 	cv::RotatedRect rotRect;
 	cv::Point2f rotPoints[4];
-    cv::Rect boxRect;
-	cv::Moments mom;	
-	double rRatio;
-	double bRatio;
-	double mRatio; //mass ratio of bounding versus moments
+	cv::Rect boxRect;
+	cv::Moments mom;
+
+	// CONSTANTS
+	cv::Scalar COLOR_CONTOUR = cv::Scalar(0,0,124),
+				COLOR_ROT_RECT = cv::Scalar(124,0,0),
+				COLOR_BD_RECT = cv::Scalar(0,124,0);
 
 
-	// Easy Calculation of Euclidean Distance
-	double pointDist(cv::Point2f &p1, cv::Point2f &p2)
-	{
-		double dx = p1.x - p2.x;
-		double dy = p1.y - p2.y;
-		return sqrt(dx * dx + dy * dy);
-	}
-
-	void setType()
-	{
-		// based on collected data
-		// of my own gestures, see doc/gesture data.xlsx
-
-		//decision for palm gesture
-		if 	(mom.m00 > 8500 &&
-					bRatio > .5 && bRatio < .95 &&
-					((rRatio > .5 && rRatio < .6) ||
-					(rRatio > 1.5 && rRatio < 2)))
-			type = PALM;
-		//fist
-		else if(mom.m00 < 10000 &&
-					bRatio > .80 && rRatio >.7 &&
-			 		mRatio < 2)
-			type = FIST;
-		//decision for point gesture
-		else if(mom.m00 < 10000 &&
-					((rRatio > 1.4 && rRatio < 2.2) ||
-                    (rRatio > .35 && rRatio < .75)) &&
-					bRatio > .4 && bRatio < 1.3)
-			type = POINT;
-		else  //unknown gesture
-			type = UNK;
-	}
-
-	QString toQString()
-	{
-		QString typeStr("");
-		switch (type) 
-		{
-			case FIST:
-				typeStr = "FIST";
-				break;
-			case PALM:
-				typeStr = "PALM";
-				break;
-			case POINT:
-				typeStr = "POINT";
-				break;
-			case UNK:
-				typeStr = "UNK";
-				break;
-			default:
-				typeStr = "NONE";
-				break;
-		}
-		return QString("%1 area: %2  bratio: %3  rratio: %4  mratio: %5 ")
-											.arg(typeStr)
-											.arg(mom.m00)
-											.arg(bRatio,0,'f',3)
-											.arg(rRatio,0,'f',3)
-											.arg(mRatio,0,'f',3);
-	}
-
-
-
-
-
-
+public:
+//##############################################################################
+//	Constructors / Destructor
 
 	//Default constructor
 	Hand()
@@ -114,19 +52,19 @@ public:
 	}
 
 	//Constructor
-	Hand(cv::RotatedRect r, cv::Moments m)
+	Hand(std::vector<cv::Point> c)
 	{
-		rotRect = r;
-		mom = m;
+		contours.clear();
+		contours.push_back(c);
 
+		//calculate the rotated and bounding rectangles of the blobs
+		rotRect = cv::minAreaRect( cv::Mat(contours[0]) );
 		rotRect.points(rotPoints);
+
 		boxRect = rotRect.boundingRect();
 
-		rRatio = pointDist(rotPoints[2],rotPoints[1]) / pointDist(rotPoints[2], rotPoints[3]);
-		bRatio = static_cast<double>(boxRect.width)/boxRect.height;
-		mRatio = (static_cast<double>(boxRect.width)*boxRect.height)/mom.m00;
-
-		setType();
+		//calculate the moments of the hand
+		mom = cv::moments(cv::Mat(contours[0]));
 	}
 
 	//copy constructor
@@ -134,13 +72,10 @@ public:
 	{
 		type = h.type;
 		rotRect = h.rotRect;
-        for(unsigned int i = 0; i < sizeof(rotPoints); i++)
+		for(unsigned int i = 0; i < sizeof(rotPoints); i++)
 			rotPoints[i] = h.rotPoints[i];
 		boxRect = h.boxRect;
 		mom = h.mom;
-		bRatio = h.bRatio;
-		rRatio = h.rRatio;
-		mRatio = h.mRatio;
 	}
 
 	//assignment operator
@@ -151,14 +86,10 @@ public:
 
 		type = rhs.type;
 		rotRect = rhs.rotRect;
-        for(unsigned int i = 0; i < sizeof(rotPoints); i++)
+		for(unsigned int i = 0; i < sizeof(rotPoints); i++)
 			rotPoints[i] = rhs.rotPoints[i];
 		boxRect = rhs.boxRect;
 		mom = rhs.mom;
-		bRatio = rhs.bRatio;
-		rRatio = rhs.rRatio;
-		mRatio = rhs.mRatio;
-
 		return *this;
 	}
 
@@ -167,7 +98,65 @@ public:
 	{
 
 	}
-};
 
+//	END Constructors / Destructor
+//##############################################################################
+
+
+
+//##############################################################################
+//	Modifiers/Accessors
+
+	// Retrieve the moments of the Hand
+	cv::Moments getMoments()
+	{
+		return mom;
+	}
+
+//	END Modifiers/Accessors
+//##############################################################################
+
+
+//##############################################################################
+//	Utility Functions
+
+	// Easy Calculation of Euclidean Distance
+	double pointDist(cv::Point2f &p1, cv::Point2f &p2)
+	{
+		double dx = p1.x - p2.x;
+		double dy = p1.y - p2.y;
+		return sqrt(dx * dx + dy * dy);
+	}
+
+	void findType()
+	{
+		//Use the statistics to caculate which gesture it is
+	}
+
+	// Draws all the relevant hand data (bounding and rotated rects, contour)
+	// on a cv::Mat that is provided
+	void drawHand(cv::Mat &image)
+	{
+		// draw connected component contour
+		cv::Mat contourImg(image.size(), image.type(), cv::Scalar(0));
+		cv::drawContours( contourImg, contours, 0, COLOR_CONTOUR, CV_FILLED, 8);
+		cv::GaussianBlur( contourImg, contourImg, cv::Size(3,3), 0);
+		image += contourImg;
+
+		// draw bounding rotated rectangles
+		for( int j = 0; j < 4; j++ )
+			line( image, rotPoints[j], rotPoints[(j+1)%4],
+					COLOR_ROT_RECT, 3, 8 );
+
+		rectangle(image, boxRect, COLOR_BD_RECT, 3);
+	}
+
+	
+//	END Utility Functions
+//##############################################################################
+
+
+
+};
 
 #endif
