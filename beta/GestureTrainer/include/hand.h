@@ -34,8 +34,8 @@ private:
 	HandType type;
 
 	// contour and hull are 2d vectors for easy drawing
-	std::vector<std::vector<cv::Point> > contour;
-	std::vector<std::vector<cv::Point> > hull;
+	std::vector<std::vector< cv::Point > > contour;
+	std::vector<std::vector< cv::Point > > hull;
 	cv::vector<cv::Vec4i> defects;
 	cv::RotatedRect rotRect;
 	cv::Point2f rotPoints[4];
@@ -64,8 +64,8 @@ public:
 	//Constructor
 	Hand(std::vector<cv::Point> c)
 	{
-		COLOR_CONTOUR = cv::Scalar(100,150,255);
-		COLOR_HULL = cv::Scalar(0,0,255);
+		COLOR_CONTOUR = cv::Scalar(150,150,150);
+		COLOR_HULL = cv::Scalar(0,0,150);
 		COLOR_ROT_RECT = cv::Scalar(124,0,0);
 		COLOR_BD_RECT = cv::Scalar(0,124,0);
 
@@ -93,7 +93,7 @@ public:
 		for(int i : hullIdxs[0])
 			hull[0].push_back(contour[0][i]);
 
-		std::cout << hull[0].size() << std::endl;
+		// std::cout << hull[0].size() << std::endl;
 
 		// defects
 		cv::convexityDefects(contour[0], hullIdxs[0], defects);
@@ -110,7 +110,7 @@ public:
 		hull.push_back(std::vector<cv::Point>());
 		for(cv::Point pt : h.hull[0])
 			hull[0].push_back(pt);
-		std::cout << "copy: " << hull[0].size() << std::endl;
+		// std::cout << "copy: " << hull[0].size() << std::endl;
 
 		type = h.type;
 
@@ -141,7 +141,7 @@ public:
 		if(rhs.hull.size() > 0)
 			for(const cv::Point& pt : rhs.hull[0])
 				hull[0].push_back(pt);
-		std::cout << "copy: " <<hull[0].size() << std::endl;
+		// std::cout << "copy: " <<hull[0].size() << std::endl;
 
 		type = rhs.type;
 
@@ -207,6 +207,12 @@ public:
 	void findType()
 	{
 		//Use the statistics to caculate which gesture it is
+
+
+
+
+
+
 	}
 
 	// Draws all the relevant hand data (bounding and rotated rects, contour)
@@ -227,7 +233,22 @@ public:
 		// Draw convex hull
 		cv::drawContours( image, hull, 0, COLOR_HULL, 5, CV_AA);
 
+		// Draw defects
+		for(cv::Vec4i defect : defects)
+		{
+			// Skip the smaller defects
+			if(defect[3]/256.0 < 30.0)
+				continue;
+			cv::circle( image, contour[0][defect[0]], 5, cv::Scalar(150,0,0), -1 );
+			cv::circle( image, contour[0][defect[1]], 5, cv::Scalar(0,150,0), -1 );
+			cv::circle( image, contour[0][defect[2]], 5, cv::Scalar(0,0,150), -1 );
+			cv::Point midPoint( 
+				(contour[0][defect[0]].x + contour[0][defect[1]].x) / 2,
+				(contour[0][defect[0]].y + contour[0][defect[1]].y) / 2);
 
+			line( image, midPoint, contour[0][defect[2]],
+					COLOR_ROT_RECT, 3, CV_AA );
+		}
 
 
 		// // draw bounding rotated rectangles
