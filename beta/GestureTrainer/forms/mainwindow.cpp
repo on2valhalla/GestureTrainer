@@ -316,7 +316,7 @@ void MainWindow::updateTimer()
 */
 void MainWindow::processColorDetection()
 {
-	if(timer->isActive())
+    if(timer->isActive() || !backProcess)
 		backProcess = !backProcess;
 	else if(!SkinDetectController::getInstance()->getHSVImage().empty())
 	{
