@@ -15,7 +15,7 @@
 
 #include <iostream>
 #include <string>
-// #include <boost/lexical_cast.hpp>
+//#include <boost/lexical_cast.hpp>
 #include <algorithm>
 
 
@@ -32,6 +32,7 @@ class Hand
 private:
 	// VARIABLES
 	HandType type;
+	User user;
 
 	// contour and hull are 2d vectors for easy drawing
 	std::vector<std::vector< cv::Point > > contour;
@@ -62,6 +63,7 @@ public:
 	}
 
 	//Constructor
+	//Hand(std::vector<cv::Point> c, const &User user)
 	Hand(std::vector<cv::Point> c)
 	{
 		COLOR_CONTOUR = cv::Scalar(150,150,150);
@@ -70,6 +72,7 @@ public:
 		COLOR_BD_RECT = cv::Scalar(0,124,0);
 
 		type = UNK;
+		this->user = user;
 
 		contour.push_back(c);
 
@@ -207,11 +210,7 @@ public:
 	void findType()
 	{
 		//Use the statistics to caculate which gesture it is
-
-
-
-
-
+		//Hand fist = user.getFist();
 
 	}
 
@@ -258,8 +257,8 @@ public:
 
 		// rectangle(image, boxRect, COLOR_BD_RECT, 3);
 
-		// putText(image, boost::lexical_cast<std::string>(mom.m00), boxRect.br(),
-			// cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
+//		putText(image, boost::lexical_cast<std::string>(mom.m00), boxRect.br(),
+//			cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
 
 
 	}
