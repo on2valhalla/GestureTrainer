@@ -259,7 +259,8 @@ public:
 
 		// rectangle(image, boxRect, COLOR_BD_RECT, 3);
 
-		// putText(image, boost::lexical_cast<std::string>(mom.m00), boxRect.br(),
+		// QString str = QString("%1").arg(mom.m00);
+		// putText(image, str.toString(), boxRect.br(),
 		// 	cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
 
 	}
