@@ -103,7 +103,7 @@ MainWindow::~MainWindow()
 	A simple conversion method to display a cv::Mat image (BGR or binary)
 	in a QLabel, that only takes a QImage as a pixelmap.
 */
-void MainWindow::displayMat(const cv::Mat& image, QLabel *label)
+void MainWindow::displayMat(const cv::Mat image, QLabel *label)
 {
 	//BGR openCV Mat to QImage
 	QImage img_qt = QImage((const unsigned char*)image.data,image.cols,
@@ -131,32 +131,55 @@ void MainWindow::displayMat(const cv::Mat& image, QLabel *label)
 	Simplification utility method, returns the result of the skin detector
 	when given a color image
 */
-cv::Mat& MainWindow::processSkin( const cv::Mat& img )
+cv::Mat MainWindow::processSkin( const cv::Mat img )
 {
-		//send SkinDetector the frame
-		SkinDetectController::getInstance()->setInputImage(img);
+	//send SkinDetector the frame
+	SkinDetectController::getInstance()->setInputImage(img);
 
-		//process the frame
-		SkinDetectController::getInstance()->process();
-		
-		//retrieve the processed frame
-		return SkinDetectController::getInstance()->getLastResult();	
+	//process the frame
+	SkinDetectController::getInstance()->process();
+	
+	//retrieve the processed frame
+	cv::Mat result = SkinDetectController::getInstance()->getLastResult();	
+	return result;
 }
 
 /*
-	Simplification utility method, returns the result of the hand detector
-	when given a BINARY image, filtered for skin
+	Simplification utility method, stores the hand with the user
+	when given a Color and BINARY image, filtered for skin
 */
-Hand& MainWindow::processHand( const cv::Mat& color, const cv::Mat& binary )
+void MainWindow::processHand( const cv::Mat color, const cv::Mat binary )
 {
-		// send HandDetector the processed frame
-		HandDetectController::getInstance()->setInputImages(color, binary);
+	// send HandDetector the processed frame
+	HandDetectController::getInstance()->setInputImages(color, binary);
 
-		// find the hand blob and store
-		HandDetectController::getInstance()->findHand();
+	// find the hand blob and store
+	HandDetectController::getInstance()->findHand();
 
-		// display hand ROI in small window
-		return HandDetectController::getInstance()->getLastHand();
+	// display hand ROI in small window
+	user.curHand = HandDetectController::getInstance()->getLastHand();
+}
+
+/*
+	Utility function for detecting the hand, and displaying it in the 
+	smaller ROI label, returns the edited image (color)
+*/
+cv::Mat MainWindow::detectHand( const cv::Mat img )
+{
+	// process skin
+	cv::Mat binary = processSkin(img);
+	processHand(img, binary);
+
+	// display hand ROI in small window
+	if(!user.curHand.isNone())
+	{
+		cv::Mat handROI(img, user.curHand.getBoundRect());
+		displayMat(handROI, ui->label_HandDisplay);
+	}
+
+	cv::Mat result =  HandDetectController::getInstance()->getLastResult();
+	return result;
+
 }
 
 //	END Utility Functions
@@ -225,22 +248,14 @@ void MainWindow::updateTimer()
 	if(measureHand)
 	{
 		// Doooo things here for measuring
-		
+
+		// user.fist = .....
+		// user.spread = .....
 	}
 	if(handDetect)
 	{
-		// retrieve the processed frame
-		cv::Mat binary = processSkin(img);
-		Hand lastHand = processHand(img, binary);
+		cv::Mat result = detectHand(img);
 
-		// display hand ROI in small window
-		if(!lastHand.isNone())
-		{
-			cv::Mat handROI(img, lastHand.getBoundRect());
-			displayMat(handROI, ui->label_HandDisplay);
-		}
-
-		cv::Mat result = HandDetectController::getInstance()->getLastResult();
 		if (!result.empty())
 			img = result;
 	}
@@ -332,6 +347,12 @@ void MainWindow::toggleCamera()
 }
 
 
+void MainWindow::keyPressEvent(QKeyEvent *e)
+{
+	qDebug() << "KeyPress" << e->key();
+}
+
+
 
 
 //---------Background Buttons--------------
@@ -343,7 +364,7 @@ void MainWindow::toggleCamera()
 */
 void MainWindow::processColorDetection()
 {
-    if(timer->isActive() || !backProcess)
+	if(timer->isActive() || !backProcess)
 		backProcess = !backProcess;
 	else if(!SkinDetectController::getInstance()->getHSVImage().empty())
 	{
@@ -520,30 +541,13 @@ void MainWindow::on_pushButton_Detect_clicked()
 		handDetect = !handDetect;
 	else
 	{
-		// process the frame
-		SkinDetectController::getInstance()->process();
-
-		// retrieve the processed frame
-		cv::Mat blobs = SkinDetectController::getInstance()->getLastResult();
 		cv::Mat img = SkinDetectController::getInstance()->getInputImage();
 
-		// send HandDetector the processed frame
-		HandDetectController::getInstance()->setInputImages(img, blobs);
+		cv::Mat result = detectHand(img);
 
-		// find the hand blob and store
-		HandDetectController::getInstance()->findHand();
-
-		// display hand ROI in small window
-		Hand lastHand = HandDetectController::getInstance()->getLastHand();
-		if(!lastHand.isNone())
-		{
-			cv::Mat handROI(img, lastHand.getBoundRect());
-			displayMat(handROI, ui->label_HandDisplay);
-		}
-
-		cv::Mat result = HandDetectController::getInstance()->getLastResult();
 		if (!result.empty())
 			img = result;
+		
 		displayMat(result, ui->label_Camera);
 	}
 }

@@ -27,6 +27,8 @@
 #include <QLabel>
 #include <QFileDialog>
 #include <QTimer>
+#include <QKeyEvent>
+#include <QDebug>
 
 //OpenCV
 #include <opencv2/core/core.hpp>
@@ -36,6 +38,7 @@
 #include "../detectors/skindetectcontroller.h"	//singleton processes skin regions
 #include "../detectors/handdetectcontroller.h"	//singleton that finds hands
 #include "../include/colorhistogram.h"		//for displaying a 3 color histogram
+#include "../include/user.h"
 
 
 namespace Ui {
@@ -55,9 +58,10 @@ public:
 	
 protected:
 	// Utilities
-    void displayMat(const cv::Mat& img, QLabel *label);
-    cv::Mat processSkin( const cv::Mat &img );
-    cv::Mat processHand( const cv::Mat &color, const cv::Mat& binary );
+	void displayMat(const cv::Mat img, QLabel *label);
+	cv::Mat processSkin( const cv::Mat img );
+    void processHand( const cv::Mat color, const cv::Mat binary );
+	cv::Mat detectHand( const cv::Mat img );
 
 	// UI Functions
 	void setSliders();
@@ -102,10 +106,11 @@ private:
 	
 private slots:
 	// Form Slots
+	void updateTimer();
 	void on_tabWidget_currentChanged(int index);
 	void setImage();
 	void toggleCamera();
-	void updateTimer();
+	void keyPressEvent(QKeyEvent *e);
 
 	//Background Slots
 	void processColorDetection();
@@ -117,11 +122,12 @@ private slots:
 	void setMaxSat(int value);
 	void setMaxValue(int value);
 
-    void on_check_Invert_stateChanged(int state);
-    void on_check_Erode_stateChanged(int state);
-    void on_check_Dilate_stateChanged(int state);
-    void on_check_Blur_stateChanged(int state);
-    void on_pushButton_Detect_clicked();
+	// Morphological slots
+	void on_check_Invert_stateChanged(int state);
+	void on_check_Erode_stateChanged(int state);
+	void on_check_Dilate_stateChanged(int state);
+	void on_check_Blur_stateChanged(int state);
+	void on_pushButton_Detect_clicked();
 };
 
 #endif // MAINWINDOW_H

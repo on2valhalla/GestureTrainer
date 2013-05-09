@@ -26,7 +26,8 @@ HEADERS  += forms/mainwindow.h \
     detectors/skindetectcontroller.h \
     detectors/handdetectcontroller.h \
     detectors/handdetector.h \
-    include/hand.h
+    include/hand.h \
+    include/user.h
 
 FORMS    +=  forms/mainwindow.ui
 
