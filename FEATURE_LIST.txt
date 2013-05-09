@@ -1,10 +1,2 @@
 What to add to Gesture Trainer:
 ------------------------------
-
-add member User to hand class
-
-add training form
-
-hotkey capture
-
-

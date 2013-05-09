@@ -175,11 +175,35 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 	{
 		cv::Mat handROI(img, user.curHand.getBoundRect());
 		displayMat(handROI, ui->label_HandDisplay);
+
+        ui->textBrowser->setText(QString("Box Width: %1\nBox Height: %2")
+                    .arg(user.curHand.getBoundRect().width)
+                    .arg(user.curHand.getBoundRect().height));
 	}
 
 	cv::Mat result =  HandDetectController::getInstance()->getLastResult();
 	return result;
 
+}
+
+void MainWindow::loadDefaultHands()
+{
+	QString selectedFilter;
+	QString fistFile = "../img/fist.jpg";
+	QString spreadFile = "../img/palm.fingers.jpg";
+	cv::Mat fistImg = cv::imread(fistFile.toStdString(),1); //0 for grayscale
+	cv::Mat spreadImg = cv::imread(spreadFile.toStdString(),1); //0 for grayscale
+
+
+	cv::Scalar localMin(0,40,93);
+	cv::Scalar localMax(20,255,255);
+	SkinDetectController::getInstance()->setThreshold(localMin, localMax);
+    user.fist = Hand(detectHand(fistImg));
+
+    localMin = cv::Scalar(0,40,93);
+    localMax = cv::Scalar(20,255,255);
+	SkinDetectController::getInstance()->setThreshold(localMin, localMax);
+    user.spread = Hand(detectHand(spreadImg));
 }
 
 //	END Utility Functions

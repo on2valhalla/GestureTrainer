@@ -63,6 +63,8 @@ protected:
     void processHand( const cv::Mat color, const cv::Mat binary );
 	cv::Mat detectHand( const cv::Mat img );
 
+	void loadDefaultHands();
+
 	// UI Functions
 	void setSliders();
 	void setThreshold();
@@ -98,7 +100,7 @@ private:
 		MEASURE_TAB = 2,
 		DETECT_TAB = 3,
 	// Camera ( 0 = sys default / 1 = iGlasses )
-		CAMERA = 1,
+		CAMERA = 0,
 	// Timer delay in ms
 		TIMER_DELAY = 25;
 
