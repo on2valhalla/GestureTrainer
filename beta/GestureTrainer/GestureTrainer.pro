@@ -39,3 +39,6 @@ LIBS += -L/opt/local/lib/ \
    -lopencv_features2d \
    -lopencv_objdetect \
    -lopencv_calib3d \
+
+RESOURCES += \
+    res.qrc

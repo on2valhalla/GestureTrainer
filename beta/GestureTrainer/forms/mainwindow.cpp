@@ -24,7 +24,7 @@
 
 
 //##############################################################################
-//	Constructors / Destructor
+//  Constructors / Destructor
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -76,28 +76,60 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	//default settings
 	backProcess = histEnable = handDetect = false;
-
 	cHist = ColorHistogram();
 
+    //Environments
+    QFile file(LOC_PREFS.c_str());
+	bool ret = file.open(QIODevice::ReadOnly | QIODevice::Text);
+//    qDebug() << QDir::currentPath();
+	if( ret )
+	{
+		QTextStream stream(&file);
+		while(!stream.atEnd())
+		{
+			QString line = stream.readLine();
+//            qDebug() << line;
+			QStringList strList = line.split("#", QString::SkipEmptyParts);
+			std::vector<cv::Scalar> loc = {cv::Scalar(), cv::Scalar()};
+
+//            qDebug() << strList;
+			locationNames.push_back(strList.at(0));
+			loc[0][0] = strList.at(1).toInt();
+			loc[0][1] = strList.at(2).toInt();
+			loc[0][2] = strList.at(3).toInt();
+			loc[1][0] = strList.at(4).toInt();
+			loc[1][1] = strList.at(5).toInt();
+			loc[1][2] = strList.at(6).toInt();
+			locations.push_back(loc);
+		}
+	}
+
+//	std::vector<cv::Scalar> home = {cv::Scalar(0, 40, 93), cv::Scalar(20, 255, 255)};
+//	locations.push_back(home);
+//	locationNames.push_back("Home");
+
 	//Hardcoded default HSV filter for home environment
-	min = cv::Scalar(0, 40, 93);
-	max = cv::Scalar(20, 255, 255);
+	min = locations[0][0];
+	max = locations[0][1];
 	setSliders();
+
+	for(unsigned int i = 0; i <locationNames.size(); i++)
+		ui->comboBox->addItem(locationNames[i]);
 }
 
 MainWindow::~MainWindow()
 {
-	delete ui;
+    delete ui;
 	delete timer;
 }
 
-//	END Constructors / Destructor
+//  END Constructors / Destructor
 //##############################################################################
 
 
 
 //##############################################################################
-//	Utility Functions
+//  Utility Functions
 
 /*
 	A simple conversion method to display a cv::Mat image (BGR or binary)
@@ -140,7 +172,7 @@ cv::Mat MainWindow::processSkin( const cv::Mat img )
 	SkinDetectController::getInstance()->process();
 	
 	//retrieve the processed frame
-	cv::Mat result = SkinDetectController::getInstance()->getLastResult();	
+	cv::Mat result = SkinDetectController::getInstance()->getLastResult();  
 	return result;
 }
 
@@ -176,9 +208,9 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 		cv::Mat handROI(img, user.curHand.getBoundRect());
 		displayMat(handROI, ui->label_HandDisplay);
 
-        ui->textBrowser->setText(QString("Box Width: %1\nBox Height: %2")
-                    .arg(user.curHand.getBoundRect().width)
-                    .arg(user.curHand.getBoundRect().height));
+		ui->textBrowser->setText(QString("Box Width: %1\nBox Height: %2")
+					.arg(user.curHand.getBoundRect().width)
+					.arg(user.curHand.getBoundRect().height));
 	}
 
 	cv::Mat result =  HandDetectController::getInstance()->getLastResult();
@@ -198,21 +230,20 @@ void MainWindow::loadDefaultHands()
 	cv::Scalar localMin(0,40,93);
 	cv::Scalar localMax(20,255,255);
 	SkinDetectController::getInstance()->setThreshold(localMin, localMax);
-    user.fist = Hand(detectHand(fistImg));
+	user.fist = Hand(detectHand(fistImg));
 
-    localMin = cv::Scalar(0,40,93);
-    localMax = cv::Scalar(20,255,255);
+	localMin = cv::Scalar(0,40,93);
+	localMax = cv::Scalar(20,255,255);
 	SkinDetectController::getInstance()->setThreshold(localMin, localMax);
-    user.spread = Hand(detectHand(spreadImg));
+	user.spread = Hand(detectHand(spreadImg));
 }
-
-//	END Utility Functions
+//  END Utility Functions
 //##############################################################################
 
 
 
 //##############################################################################
-//	UI Functions
+//  UI Functions
 
 /*
 	Set the sliders to specific positions (Scalars used for compatibility
@@ -244,7 +275,7 @@ void MainWindow::setThreshold()
 
 
 //##############################################################################
-//	Slots
+//  Slots
 
 //---------Timer--------------
 
@@ -423,7 +454,34 @@ void MainWindow::showHistogram()
 	}
 }
 
+void MainWindow::on_pushButton_Save_clicked()
+{
+    QFile file(LOC_PREFS.c_str());
+    if (!file.open(QIODevice::Append | QIODevice::Text))
+         return;
 
+     QTextStream out(&file);
+
+     bool ok;
+     QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+                                           tr("Location name:"), QLineEdit::Normal,
+                                          "", &ok);
+     if(ok && !text.isEmpty())
+         out << text;
+     else
+         out << "unknown";
+
+     out << min[0] << "#" << min[1] << "#" << min[2] << "#" ;
+     out << min[0] << "#" << min[1] << "#" << min[2] << "\n" ;
+
+
+	// add to list
+	std::vector<cv::Scalar> loc = {min, max};
+	locations.push_back(loc);
+	locationNames.push_back(text);
+
+	ui->comboBox->addItem(text);
+}
 
 
 //---------Filter Sliders--------------
@@ -576,6 +634,14 @@ void MainWindow::on_pushButton_Detect_clicked()
 	}
 }
 
+
+void MainWindow::on_comboBox_currentIndexChanged(int index)
+{
+//	qDebug() << "Location:  " << index;
+	min = locations[index][0];
+	max = locations[index][1];
+    setSliders();
+}
 
 // END Slots
 //##############################################################################

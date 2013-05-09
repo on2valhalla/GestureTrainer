@@ -29,10 +29,15 @@
 #include <QTimer>
 #include <QKeyEvent>
 #include <QDebug>
+#include <QInputDialog>
 
 //OpenCV
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+
+#include <vector>
+#include <fstream>
+#include <iostream>
 
 // Local Includes
 #include "../detectors/skindetectcontroller.h"	//singleton processes skin regions
@@ -62,6 +67,7 @@ protected:
 	cv::Mat processSkin( const cv::Mat img );
     void processHand( const cv::Mat color, const cv::Mat binary );
 	cv::Mat detectHand( const cv::Mat img );
+    bool copyFile(const QString& src, const QString& dst);
 
 	void loadDefaultHands();
 
@@ -83,6 +89,8 @@ private:
 
 	// thresholding masks
 	cv::Scalar min, max;
+    std::vector<std::vector<cv::Scalar> > locations;
+    std::vector<QString> locationNames;
 
 	// histogram vars
 	cv::Mat histogram;
@@ -104,6 +112,7 @@ private:
 	// Timer delay in ms
 		TIMER_DELAY = 25;
 
+    std::string LOC_PREFS = "../../../../GestureTrainer/prefs/location.prefs.dat";
 
 	
 private slots:
@@ -113,6 +122,7 @@ private slots:
 	void setImage();
 	void toggleCamera();
 	void keyPressEvent(QKeyEvent *e);
+    void on_comboBox_currentIndexChanged(int index);
 
 	//Background Slots
 	void processColorDetection();
@@ -129,7 +139,8 @@ private slots:
 	void on_check_Erode_stateChanged(int state);
 	void on_check_Dilate_stateChanged(int state);
 	void on_check_Blur_stateChanged(int state);
-	void on_pushButton_Detect_clicked();
+    void on_pushButton_Detect_clicked();
+    void on_pushButton_Save_clicked();
 };
 
 #endif // MAINWINDOW_H
