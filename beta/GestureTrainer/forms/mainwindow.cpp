@@ -127,6 +127,38 @@ void MainWindow::displayMat(const cv::Mat& image, QLabel *label)
 	label->setPixmap(img_pix.scaled(label->size(), Qt::KeepAspectRatio));
 }
 
+/*
+	Simplification utility method, returns the result of the skin detector
+	when given a color image
+*/
+cv::Mat& MainWindow::processSkin( const cv::Mat& img )
+{
+		//send SkinDetector the frame
+		SkinDetectController::getInstance()->setInputImage(img);
+
+		//process the frame
+		SkinDetectController::getInstance()->process();
+		
+		//retrieve the processed frame
+		return SkinDetectController::getInstance()->getLastResult();	
+}
+
+/*
+	Simplification utility method, returns the result of the hand detector
+	when given a BINARY image, filtered for skin
+*/
+Hand& MainWindow::processHand( const cv::Mat& color, const cv::Mat& binary )
+{
+		// send HandDetector the processed frame
+		HandDetectController::getInstance()->setInputImages(color, binary);
+
+		// find the hand blob and store
+		HandDetectController::getInstance()->findHand();
+
+		// display hand ROI in small window
+		return HandDetectController::getInstance()->getLastHand();
+}
+
 //	END Utility Functions
 //##############################################################################
 
@@ -167,6 +199,55 @@ void MainWindow::setThreshold()
 //##############################################################################
 //	Slots
 
+//---------Timer--------------
+
+/*
+	Controls the display of the video, on the interval set in
+	toggleCamera above. It also regulates the display of the 
+	histogram, and processing of the video if they are enabled.
+*/
+void MainWindow::updateTimer()
+{
+	cv::Mat img;
+	cap >> img; //capture a frame
+
+	if(histEnable)
+	{   // update the histogram
+		histogram = cHist.getHistogramImage(img);
+		cv::imshow("Histogram", histogram);
+	}
+	if(backProcess)
+	{
+		cv::Mat result = processSkin(img);
+		if (!result.empty())
+			img = result;
+	}
+	if(measureHand)
+	{
+		// Doooo things here for measuring
+		
+	}
+	if(handDetect)
+	{
+		// retrieve the processed frame
+		cv::Mat binary = processSkin(img);
+		Hand lastHand = processHand(img, binary);
+
+		// display hand ROI in small window
+		if(!lastHand.isNone())
+		{
+			cv::Mat handROI(img, lastHand.getBoundRect());
+			displayMat(handROI, ui->label_HandDisplay);
+		}
+
+		cv::Mat result = HandDetectController::getInstance()->getLastResult();
+		if (!result.empty())
+			img = result;
+	}
+	displayMat(img, ui->label_Camera);
+}
+
+
 
 //---------Main Form Slots--------------
 
@@ -182,13 +263,22 @@ void MainWindow::on_tabWidget_currentChanged(int index)
 			backProcess = false;
 			histEnable = false;
 			handDetect = false;
+			measureHand = false;
 			break;
 		case BACKGROUND_TAB:
 			handDetect = false;
+			measureHand = false;
 			break;
 		case MEASURE_TAB:
 			backProcess = false;
 			histEnable = false;
+			handDetect = false;
+			measureHand = true;
+			break;
+		case DETECT_TAB:
+			backProcess = false;
+			histEnable = false;
+			measureHand = false;
 			break;
 		default:
 			break;
@@ -239,69 +329,6 @@ void MainWindow::toggleCamera()
 		ui->pushButton_Camera->setText("Hide Camera");
 	}
 
-}
-
-
-//---------Timer--------------
-
-/*
-	Controls the display of the video, on the interval set in
-	toggleCamera above. It also regulates the display of the 
-	histogram, and processing of the video if they are enabled.
-*/
-void MainWindow::updateTimer()
-{
-	cv::Mat img;
-	cap >> img; //capture a frame
-
-	if(histEnable)
-	{   // update the histogram
-		histogram = cHist.getHistogramImage(img);
-		cv::imshow("Histogram", histogram);
-	}
-	if(backProcess)
-	{
-		//send SkinDetector the frame
-		SkinDetectController::getInstance()->setInputImage(img);
-
-		//process the frame
-		SkinDetectController::getInstance()->process();
-		
-		//retrieve the processed frame
-		cv::Mat result = SkinDetectController::getInstance()->getLastResult();
-		if (!result.empty())
-			img = result;
-	}
-	if(handDetect)
-	{
-		// send SkinDetector the frame
-		SkinDetectController::getInstance()->setInputImage(img);
-
-		// process the frame
-		SkinDetectController::getInstance()->process();
-
-		// retrieve the processed frame
-		cv::Mat blobs = SkinDetectController::getInstance()->getLastResult();
-
-		// send HandDetector the processed frame
-		HandDetectController::getInstance()->setInputImages(img, blobs);
-
-		// find the hand blob and store
-		HandDetectController::getInstance()->findHand();
-
-		// display hand ROI in small window
-		Hand lastHand = HandDetectController::getInstance()->getLastHand();
-		if(!lastHand.isNone())
-		{
-			cv::Mat handROI(img, lastHand.getBoundRect());
-			displayMat(handROI, ui->label_HandDisplay);
-		}
-
-		cv::Mat result = HandDetectController::getInstance()->getLastResult();
-		if (!result.empty())
-			img = result;
-	}
-	displayMat(img, ui->label_Camera);
 }
 
 

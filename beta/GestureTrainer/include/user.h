@@ -20,5 +20,6 @@ class User
 public:
 	Hand fist;
 	Hand spread;
-	
+	Hand curHand;
+
 }

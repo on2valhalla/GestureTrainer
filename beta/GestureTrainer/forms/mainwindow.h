@@ -56,6 +56,8 @@ public:
 protected:
 	// Utilities
     void displayMat(const cv::Mat& img, QLabel *label);
+    cv::Mat processSkin( const cv::Mat &img );
+    cv::Mat processHand( const cv::Mat &color, const cv::Mat& binary );
 
 	// UI Functions
 	void setSliders();
@@ -71,7 +73,7 @@ private:
 
 	// timer vars
 	QTimer *timer;
-	bool backProcess, histEnable, handDetect;
+	bool backProcess, histEnable, handDetect, measureHand;
 
 	// thresholding masks
 	cv::Scalar min, max;
@@ -80,6 +82,8 @@ private:
 	cv::Mat histogram;
 	ColorHistogram cHist;
 
+	// The users data
+	User user;
 
 
 	// CONSTANTS
@@ -88,6 +92,7 @@ private:
 		START_TAB = 0,
 		BACKGROUND_TAB = 1,
 		MEASURE_TAB = 2,
+		DETECT_TAB = 3,
 	// Camera ( 0 = sys default / 1 = iGlasses )
 		CAMERA = 1,
 	// Timer delay in ms

@@ -15,8 +15,9 @@
 
 #include <iostream>
 #include <string>
-//#include <boost/lexical_cast.hpp>
 #include <algorithm>
+
+#include "../include/user.h"
 
 
 enum HandType{
@@ -257,8 +258,8 @@ public:
 
 		// rectangle(image, boxRect, COLOR_BD_RECT, 3);
 
-//		putText(image, boost::lexical_cast<std::string>(mom.m00), boxRect.br(),
-//			cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
+		// putText(image, boost::lexical_cast<std::string>(mom.m00), boxRect.br(),
+		// 	cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
 
 
 	}
