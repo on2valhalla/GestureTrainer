@@ -16,6 +16,9 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+
+#include "../include/user.h"
+
 	
 
 
@@ -28,6 +31,7 @@ enum HandType{
 
 class Hand
 {
+     friend class User;
 
 private:
 	// VARIABLES
@@ -205,9 +209,10 @@ public:
 		return sqrt(dx * dx + dy * dy);
 	}
 
-	void findType(const User &user)
+    void findType()
 	{
 		//Use the statistics to caculate which gesture it is
+        // We should move this to USER
 
 	}
 
@@ -256,7 +261,6 @@ public:
 
 		// putText(image, boost::lexical_cast<std::string>(mom.m00), boxRect.br(),
 		// 	cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
-
 
 	}
 

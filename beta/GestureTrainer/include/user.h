@@ -12,7 +12,6 @@
 
 
 #include "../include/hand.h"
-class Hand;
 
 class User
 {

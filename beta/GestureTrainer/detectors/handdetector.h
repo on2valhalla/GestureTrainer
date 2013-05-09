@@ -18,7 +18,7 @@
 #include <iostream>
 #include <string>
 
-#include "../include/hand.h"
+#include "../include/user.h"
 
 // Haar Cascade Classifier face file location
 static std::string FACEFILE = 
