@@ -131,7 +131,7 @@ public:
 		mom = h.mom;
 		defects = h.defects;
 		bRatio = h.mRatio;
-        mRatio = h.mRatio;
+        mRatio = h.bRatio;
 
 	}
 
@@ -163,7 +163,7 @@ public:
 		mom = rhs.mom;
 		defects = rhs.defects;
 		bRatio = rhs.mRatio;
-        mRatio = rhs.mRatio;
+        mRatio = rhs.bRatio;
 
 
 		return *this;
