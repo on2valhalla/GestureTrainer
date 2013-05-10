@@ -88,6 +88,8 @@ MainWindow::MainWindow(QWidget *parent) :
 		while(!stream.atEnd())
 		{
 			QString line = stream.readLine();
+            if(line.size() < 10)
+                continue;
 //            qDebug() << line;
 			QStringList strList = line.split("#", QString::SkipEmptyParts);
 			std::vector<cv::Scalar> loc = {cv::Scalar(), cv::Scalar()};
@@ -467,12 +469,12 @@ void MainWindow::on_pushButton_Save_clicked()
                                            tr("Location name:"), QLineEdit::Normal,
                                           "", &ok);
      if(ok && !text.isEmpty())
-         out << text;
+         out << text << "#";
      else
-         out << "unknown";
+         out << "unknown#";
 
      out << min[0] << "#" << min[1] << "#" << min[2] << "#" ;
-     out << min[0] << "#" << min[1] << "#" << min[2] << "\n" ;
+     out << max[0] << "#" << max[1] << "#" << max[2] << "\n" ;
 
 
 	// add to list
