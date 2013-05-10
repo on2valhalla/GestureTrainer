@@ -409,6 +409,18 @@ void MainWindow::toggleCamera()
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
 	qDebug() << "KeyPress" << e->key();
+	if(e->key() == 32 && measureHand) // SPACE BAR
+	{
+
+	}
+	else if(e->key() == 16777220 && measureHand) // ENTER
+	{
+
+	}
+	else if(e->key() == 88 && measureHand) // x
+	{
+
+	}
 }
 
 

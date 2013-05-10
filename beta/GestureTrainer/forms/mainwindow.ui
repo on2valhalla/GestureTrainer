@@ -75,7 +75,7 @@
      <enum>QTabWidget::Triangular</enum>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="tabStart">
      <attribute name="title">
@@ -646,7 +646,7 @@
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>../../../img/fist.jpg</pixmap>
+       <pixmap resource="../res.qrc">:/img/fist.jpg</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>
@@ -721,6 +721,8 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="../res.qrc"/>
+ </resources>
  <connections/>
 </ui>
