@@ -210,9 +210,11 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 		cv::Mat handROI(img, user.curHand.getBoundRect());
 		displayMat(handROI, ui->label_HandDisplay);
 
-		ui->textBrowser->setText(QString("Box Width: %1\nBox Height: %2")
+		ui->textBrowser->setText(QString("Box Width: %1\nBox Height: %2\nbRatio: %3\nmRatio: %4")
 					.arg(user.curHand.getBoundRect().width)
-					.arg(user.curHand.getBoundRect().height));
+					.arg(user.curHand.getBoundRect().height)
+					.arg(user.curHand.getB())
+					.arg(user.curHand.getM()));
 	}
 
 	cv::Mat result =  HandDetectController::getInstance()->getLastResult();

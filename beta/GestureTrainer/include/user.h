@@ -10,7 +10,7 @@
 #ifndef USER_H
 #define USER_H
 
-
+#include <string>
 #include "../include/hand.h"
 
 class User
@@ -29,7 +29,7 @@ public:
 
 
 	// Easy Calculation of Euclidean Distance
-	double pointDist(cv::Point2f &p1, cv::Point2f &p2)
+	double pointDist(cv::Point &p1, cv::Point &p2)
 	{
 		double dx = p1.x - p2.x;
 		double dy = p1.y - p2.y;
@@ -40,30 +40,28 @@ public:
 	{
 		cv::vector<cv::Vec4i> defects = spread.defects;
 		std::vector<std::vector< cv::Point > > contour = spread.contour;
+		std::string orientation;
 
 		cv::Vec4i minDefect = defects[0];
-		cv::Vec4i thumbDefect = defects[0];
-
 
 		while(defects.size() > 4)
 		{
 			for(cv::Vec4i defect : defects)
 			{
-				if(contour[0][defect[3]]/256.0 < contour[0][minDefect[3]]/256.0)
+				if(defect[3]/256.0 < minDefect[3]/256.0)
 					minDefect = defect;
 			}
 
 			defects.erase(std::remove(defects.begin(), defects.end(), minDefect), defects.end());
 		}
 
+		cv::Vec4i rightMost = defects[0];
+		cv::Vec4i leftMost = defects[3];
 
-		for(cv::Vec4i defect : defects)
-		{
-			
-			if(pointDist(contour[0][defect[0]], contour[0][defect[1]]) > 
-				pointDist(contour[0][thumbDefect[0]], contour[0][thumbDefect[1]]))
-					thumbDefect = defect;
-		}
+		if(pointDist(contour[0][rightMost[0]], contour[0][rightMost[1]]) > 
+				pointDist(contour[0][leftMost[0]], contour[0][leftMost[1]]))
+					orientation = "left";
+		else orientation = "right";
 
 
 

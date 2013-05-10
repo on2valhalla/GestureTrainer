@@ -57,6 +57,10 @@ public:
 //##############################################################################
 //	Constructors / Destructor
 
+
+	double bRatio;
+	double mRatio;
+
 	//Default constructor
 	Hand()
 	{
@@ -102,7 +106,7 @@ public:
 		// defects
 		cv::convexityDefects(contour[0], hullIdxs[0], defects);
 
-
+		findType();
 	}
 
 	//copy constructor
@@ -189,6 +193,16 @@ public:
 		return boxRect;
 	}
 
+	double getB()
+	{
+		return bRatio;
+	}
+
+	double getM()
+	{
+		return mRatio;
+	}
+
 	bool isNone()
 	{
 		return type == NONE;
@@ -211,8 +225,9 @@ public:
 
     void findType()
 	{
-		//Use the statistics to caculate which gesture it is
-        // We should move this to USER
+		bRatio = static_cast<double>(boxRect.width)/boxRect.height;
+		std::cout << bRatio << std::endl;
+		mRatio = (static_cast<double>(boxRect.width)*boxRect.height)/mom.m00;
 
 	}
 
