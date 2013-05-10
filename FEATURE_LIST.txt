@@ -1,10 +1,6 @@
 What to add to Gesture Trainer:
 ------------------------------
 
-Make dropdown background work
-
-complete training process
-
 class differentiation
 
 recognition of individual gestures

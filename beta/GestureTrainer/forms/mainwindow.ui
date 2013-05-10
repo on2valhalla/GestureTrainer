@@ -624,7 +624,7 @@
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="label_User">
+     <widget class="QLabel" name="label_Example">
       <property name="geometry">
        <rect>
         <x>10</x>

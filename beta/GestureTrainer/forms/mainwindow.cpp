@@ -214,9 +214,14 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 		cv::Mat handROI(img, user.curHand.getBoundRect());
 		displayMat(handROI, ui->label_HandDisplay);
 
-		std::cout << user.curHand.bRatio << std::endl;
+		// std::cout << user.curHand.bRatio << std::endl;
 
-		ui->textBrowser->setText(QString("Box Width: %1\nBox Height: %2\nbRatio: %3\nmRatio: %4")
+		ui->textBrowser->setText(QString(
+					"User bratios(F/S): (%1 / %2)"
+					"\nBox Width: %3\tBox Height: %4"
+					"\nbRatio: %5\nmRatio: %6")
+					.arg(user.fist.getB())
+					.arg(user.spread.getB())
 					.arg(user.curHand.getBoundRect().width)
 					.arg(user.curHand.getBoundRect().height)
 					.arg(user.curHand.getB())
@@ -430,12 +435,22 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 	}
 	else if(e->key() == 16777220 && measureHand) // ENTER
 	{
-		trainHand( SkinDetectController::getInstance()->getInputImage() );
-
 		if(user.fist.isNone())
+		{
 			user.fist = user.curHand;
+			//Display the next image
+			QPixmap img_pix(":/img/palm.fingers.jpg"); 
+			ui->label_Example->setPixmap(img_pix.scaled(
+						ui->label_Example->size(), Qt::KeepAspectRatio));
+		}
 		else if(user.spread.isNone())
+		{
 			user.spread = user.curHand;
+			// CLear the label, done with measurement
+			QPixmap img_pix(250,250); 
+			img_pix.fill();
+			ui->label_Example->setPixmap(img_pix);
+		}
 
 		toggleCamera();
 	}
@@ -443,6 +458,10 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 	{
 		user.fist = Hand();
 		user.spread = Hand();
+		//Display the first image
+		QPixmap img_pix(":/img/fist.jpg"); 
+		ui->label_Example->setPixmap(img_pix.scaled(
+					ui->label_Example->size(), Qt::KeepAspectRatio));
 	}
 }
 

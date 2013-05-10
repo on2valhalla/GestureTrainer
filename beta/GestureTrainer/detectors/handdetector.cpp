@@ -55,12 +55,12 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
 					CV_CHAIN_APPROX_TC89_L1); // an approximation algorithm
 	//----------------END Contours------------------
 
-	if(contours.size() == 0)
+	if(contours.size() <= 0)
 		return resultImg;
 
 	//------------------Find Largest Hand----------------
 	int maxMass = 0;
-	Hand maxHand = Hand();
+	std::vector<cv::Point> maxContour;
 
 	// iterate through all the top-level contours
     int idx = 0;
@@ -82,20 +82,18 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
 			continue;
 
 		// Find the largest contour
-		int curMass = MIN_HAND_SIZE;
-        if(idx < (int)contours.size())
-			curMass = (int)cv::moments( cv::Mat(contours[idx]) ).m00;
+		int curMass = cv::contourArea( contours[idx] );
 		if(curMass > MIN_HAND_SIZE && curMass > maxMass)
 		{
 			maxMass = curMass;
-			maxHand = Hand(contours[idx]);
+			maxContour = contours[idx];
 		}
 	}
 	
-	// if(!maxHand.isNone())
-	// 	maxHand.smooth(lastHand);
+	if(!maxContour.empty())
+		approxPolyDP(maxContour, maxContour, 2, true);
 
-	lastHand = maxHand;
+	lastHand = Hand(maxContour);
 	lastHand.drawHand(resultImg);
 	//------------------END Find Hand--------------------
 

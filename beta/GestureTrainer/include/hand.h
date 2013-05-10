@@ -73,13 +73,17 @@ public:
 	//Constructor
 	Hand(std::vector<cv::Point> c)
 	{
+		if(c.size() <= 0)
+			Hand();
+		else
+		{
+			type = UNK;
 
-		type = UNK;
+			contour.push_back(c);
 
-		contour.push_back(c);
-
-		calcTraits();
-		findType();
+			calcTraits();
+			findType();
+		}
 	}
 
 	//copy constructor
@@ -247,7 +251,7 @@ public:
 	void findType()
 	{
 		bRatio = static_cast<double>(boxRect.width)/boxRect.height;
-		std::cout << bRatio << std::endl;
+		// std::cout << bRatio << std::endl;
 		mRatio = (static_cast<double>(boxRect.width)*boxRect.height)/mom.m00;
 
 	}

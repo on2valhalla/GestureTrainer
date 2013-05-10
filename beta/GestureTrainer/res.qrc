@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>img/fist.jpg</file>
-        <file>img/fist.png</file>
         <file>img/palm.fingers.jpg</file>
         <file>prefs/location.prefs.dat</file>
     </qresource>
