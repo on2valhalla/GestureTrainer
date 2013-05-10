@@ -1,4 +1,15 @@
 What to add to Gesture Trainer:
 ------------------------------
-asdflkjs
+
+Make dropdown background work
+
+complete training process
+
+class differentiation
+
+recognition of individual gestures
+
+finger length
+
+
 
