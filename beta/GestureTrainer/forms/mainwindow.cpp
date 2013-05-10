@@ -210,6 +210,8 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 		cv::Mat handROI(img, user.curHand.getBoundRect());
 		displayMat(handROI, ui->label_HandDisplay);
 
+		std::cout << user.curHand.bRatio << std::endl;
+
 		ui->textBrowser->setText(QString("Box Width: %1\nBox Height: %2\nbRatio: %3\nmRatio: %4")
 					.arg(user.curHand.getBoundRect().width)
 					.arg(user.curHand.getBoundRect().height)

@@ -27,6 +27,35 @@ public:
 	double middle;
 	double thumb;
 
+	//Constructor
+    User()
+	{
+
+	}
+
+	//copy constructor
+	User(const User& h)
+	{
+		fist = h.fist;
+		spread = h.spread;
+		curHand = h.curHand;
+	}
+
+	//assignment operator
+	User& operator=(const User& rhs)
+	{
+		fist = rhs.fist;
+		spread = rhs.spread;
+		curHand = rhs.curHand;
+
+        return *this;
+	}
+
+	//destructor
+	~User()
+	{
+		
+	}
 
 	// Easy Calculation of Euclidean Distance
 	double pointDist(cv::Point &p1, cv::Point &p2)
@@ -34,6 +63,11 @@ public:
 		double dx = p1.x - p2.x;
 		double dy = p1.y - p2.y;
 		return sqrt(dx * dx + dy * dy);
+	}
+
+	void curType()
+	{
+
 	}
 
 	void getFingers()

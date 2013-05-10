@@ -53,13 +53,14 @@ private:
 				COLOR_BD_RECT;
 
 
+
 public:
 //##############################################################################
 //	Constructors / Destructor
 
-
 	double bRatio;
 	double mRatio;
+
 
 	//Default constructor
 	Hand()
@@ -127,10 +128,10 @@ public:
 			rotPoints[i] = h.rotPoints[i];
 
 		boxRect = h.boxRect;
-
 		mom = h.mom;
-
 		defects = h.defects;
+		bRatio = h.mRatio;
+        mRatio = h.mRatio;
 
 	}
 
@@ -159,10 +160,10 @@ public:
 			rotPoints[i] = rhs.rotPoints[i];
 
 		boxRect = rhs.boxRect;
-
 		mom = rhs.mom;
-
 		defects = rhs.defects;
+		bRatio = rhs.mRatio;
+        mRatio = rhs.mRatio;
 
 
 		return *this;
