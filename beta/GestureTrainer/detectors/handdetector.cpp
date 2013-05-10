@@ -81,7 +81,9 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
 			continue;
 
 		// Find the largest contour
-		int curMass = (int)cv::moments( cv::Mat(contours[idx]) ).m00;
+		int curMass = MIN_HAND_SIZE;
+        if(!contours[idx].empty())
+			curMass = (int)cv::moments( cv::Mat(contours[idx]) ).m00;
 		if(curMass > MIN_HAND_SIZE && curMass > maxMass)
 		{
 			maxMass = curMass;
