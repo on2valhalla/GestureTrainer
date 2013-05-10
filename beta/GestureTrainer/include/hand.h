@@ -11,6 +11,9 @@
 #ifndef HAND_H
 #define HAND_H
 
+#include <QDebug>
+#include <QString>
+
 #include <opencv2/core/core.hpp>
 
 #include <iostream>
@@ -26,6 +29,9 @@ enum HandType{
 
 	//FILL IN MORE TYPES AS WE FIGURE THEM OUT
 	UNK,
+	FIST,
+	PALM,
+	FINGERS,
 	NONE
 };
 
@@ -44,13 +50,21 @@ private:
 	cv::RotatedRect rotRect;
 	cv::Point2f rotPoints[4];
 	cv::Rect boxRect;
+	double bRatio;
+	double mRatio;
 	cv::Moments mom;
+	cv::Point palmCenter;
+	int palmRadius;
 
 	// COLORS
-	cv::Scalar COLOR_CONTOUR = cv::Scalar(150,150,150),
-				COLOR_HULL = cv::Scalar(150,150,150),
-				COLOR_ROT_RECT = cv::Scalar(124,0,0),
-				COLOR_BD_RECT = cv::Scalar(0,124,0);
+	cv::Scalar HALF_GREY = cv::Scalar(75,75,75),
+				GREY = cv::Scalar(125,125,125),
+				HALF_BLUE = cv::Scalar(125,0,0),
+				HALF_RED = cv::Scalar(0,0,125),
+				HALF_GREEN = cv::Scalar(0,125,0);
+
+	static const unsigned int MAX_DEFECTS = 8;
+	const double MIN_DEFECT_SIZE = 5.0;
 
 
 
@@ -58,8 +72,6 @@ public:
 //##############################################################################
 //	Constructors / Destructor
 
-	double bRatio;
-	double mRatio;
 
 
 	//Default constructor
@@ -89,59 +101,38 @@ public:
 	//copy constructor
 	Hand(const Hand& h)
 	{
-		contour.push_back(std::vector<cv::Point>());
-		for(cv::Point pt : h.contour[0])
-			contour[0].push_back(pt);
-		hull.push_back(std::vector<cv::Point>());
-		for(cv::Point pt : h.hull[0])
-			hull[0].push_back(pt);
-		// std::cout << "copy: " << hull[0].size() << std::endl;
-
 		type = h.type;
-
-		rotRect = h.rotRect;
-		for(unsigned int i = 0; i < sizeof(rotPoints); i++)
-			rotPoints[i] = h.rotPoints[i];
-
-		boxRect = h.boxRect;
-		mom = h.mom;
+		contour = h.contour;
+		hull = h.hull;
 		defects = h.defects;
-		bRatio = h.mRatio;
-		mRatio = h.bRatio;
-
+		rotRect = h.rotRect;
+		rotRect.points(rotPoints);
+		boxRect = h.boxRect;
+		bRatio = h.bRatio;
+		mRatio = h.mRatio;
+		mom = h.mom;
+		palmCenter = h.palmCenter;
+		palmRadius = h.palmRadius;
 	}
 
 	//assignment operator
 	Hand& operator=(const Hand& rhs)
 	{
-		if(this == &rhs)
-			return *this;
-
-		contour.clear();
-		contour.push_back(std::vector<cv::Point>());
-		if(rhs.contour.size() > 0)
-			for(const cv::Point& pt : rhs.contour[0])
-				contour[0].push_back(pt);
-		hull.clear();
-		hull.push_back(std::vector<cv::Point>());
-		if(rhs.hull.size() > 0)
-			for(const cv::Point& pt : rhs.hull[0])
-				hull[0].push_back(pt);
-		// std::cout << "copy: " <<hull[0].size() << std::endl;
-
-		type = rhs.type;
-
-		rotRect = rhs.rotRect;
-		for(unsigned int i = 0; i < sizeof(rotPoints); i++)
-			rotPoints[i] = rhs.rotPoints[i];
-
-		boxRect = rhs.boxRect;
-		mom = rhs.mom;
-		defects = rhs.defects;
-		bRatio = rhs.mRatio;
-		mRatio = rhs.bRatio;
-
-
+		if(this != &rhs)
+		{
+			type = rhs.type;
+			contour = rhs.contour;
+			hull = rhs.hull;
+			defects = rhs.defects;
+			rotRect = rhs.rotRect;
+			rotRect.points(rotPoints);
+			boxRect = rhs.boxRect;
+			bRatio = rhs.bRatio;
+			mRatio = rhs.mRatio;
+			mom = rhs.mom;
+			palmCenter = rhs.palmCenter;
+			palmRadius = rhs.palmRadius;
+		}
 		return *this;
 	}
 
@@ -170,14 +161,31 @@ public:
 		return boxRect;
 	}
 
-	double getB()
+	double getB() const
 	{
 		return bRatio;
 	}
 
-	double getM()
+	double getM() const
 	{
 		return mRatio;
+	}
+
+	QString getType() const
+	{
+		switch(type)
+		{
+			case UNK:
+				return QString("UNK");
+			case FIST:
+				return QString("FIST");
+			case PALM:
+				return QString("PALM");
+			case FINGERS:
+				return QString("FINGERS");
+			default:
+				return QString("NONE");
+		}
 	}
 
 	bool isNone() const
@@ -187,6 +195,10 @@ public:
 
 	void calcTraits()
 	{
+		palmCenter = cv::Point(0,0);
+		palmRadius = 0;
+
+
 		// min fit rectangle (rotated)
 		rotRect = cv::minAreaRect( cv::Mat(contour[0]) );
 		rotRect.points(rotPoints);
@@ -210,23 +222,43 @@ public:
 		// std::cout << hull[0].size() << std::endl;
 
 		// defects
-		cv::convexityDefects(contour[0], hullIdxs[0], defects);
+		defects.empty();
+		std::vector<cv::Vec4i> tmpDefects;
+		cv::convexityDefects(contour[0], hullIdxs[0], tmpDefects);
+		// cv::convexityDefects(contour[0], hullIdxs[0], defects);
+
+		if(tmpDefects.size() <= 0)
+			return;
+		/* Average depth points to get hand center */
+		int x = 0, y = 0;
+		for (cv::Vec4i defect : tmpDefects)
+		{
+			if(defect[3]/256.0 < MIN_DEFECT_SIZE)
+				// || defects.size() > MAX_DEFECTS)
+				continue;
+			x += contour[0][defect[2]].x;
+			y += contour[0][defect[2]].y;
+			defects.push_back(defect);
+		}
+
+		if(defects.size() <= 0)
+			return;
+
+		palmCenter.x = x/defects.size();
+		palmCenter.y = y/defects.size();
+
+		/* Compute hand radius as mean of distances of
+		   defects' depth point to hand center */
+		int dist = 0;
+		for(cv::Vec4i defect : defects)
+		{
+			dist += pointDist(palmCenter, contour[0][defect[2]]);
+		}
+
+		palmRadius = ((double)dist) / defects.size();
+		qDebug() << "radius: " << palmRadius;
 	}
 
-	// void smooth(const Hand& lastHand)
-	// {
-	// 	if(!lastHand.isNone())
-	// 	{
-	// 		for (unsigned int i = 0, j = 0; 
-	// 			i < contour[0].size() || j < lastHand.contour[0].size(); 
-	// 			i++, j++)
-	// 		{
-	// 			contour[0][i] = midPoint(contour[0][i], lastHand.contour[0][j]);
-	// 		}
-	// 	}
-
-	// 	calcTraits();
-	// }
 
 //	END Modifiers/Accessors
 //##############################################################################
@@ -236,6 +268,12 @@ public:
 //	Utility Functions
 
 	// Easy Calculation of Euclidean Distance
+	double pointDist(cv::Point &p1, cv::Point &p2)
+	{
+		double dx = p1.x - p2.x;
+		double dy = p1.y - p2.y;
+		return sqrt(dx * dx + dy * dy);
+	}
 	double pointDist(cv::Point2f &p1, cv::Point2f &p2)
 	{
 		double dx = p1.x - p2.x;
@@ -245,7 +283,7 @@ public:
 
 	cv::Point midPoint(const cv::Point &p1, const cv::Point &p2)
 	{
-        return cv::Point( (p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+		return cv::Point( (p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
 	}
 
 	void findType()
@@ -267,42 +305,70 @@ public:
 		// draw onto separate Mat for highlighter effect when added
 		cv::Mat contourImg(image.size(), image.type(), cv::Scalar(0));
 		cv::drawContours( contourImg, contour, 0, 
-							COLOR_CONTOUR, CV_FILLED, CV_AA);
+							HALF_GREY, CV_FILLED, CV_AA);
 		cv::GaussianBlur( contourImg, contourImg, cv::Size(3,3), 0);
 		image += contourImg;
 
 		// Draw convex hull
-		cv::drawContours( image, hull, 0, COLOR_HULL, 5, CV_AA);
+		cv::drawContours( image, hull, 0, GREY, 2, CV_AA);
 
 		// Draw defects
 		for(cv::Vec4i defect : defects)
 		{
 			// Skip the smaller defects
-			if(defect[3]/256.0 < 30.0)
+			if(defect[3]/256.0 < MIN_DEFECT_SIZE)
 				continue;
-			cv::circle( image, contour[0][defect[0]], 5, cv::Scalar(150,0,0), -1 );
-			cv::circle( image, contour[0][defect[1]], 5, cv::Scalar(0,150,0), -1 );
-			cv::circle( image, contour[0][defect[2]], 5, cv::Scalar(0,0,150), -1 );
+			cv::circle( image, contour[0][defect[0]], 5, HALF_BLUE, -1 );
+			cv::circle( image, contour[0][defect[1]], 5, HALF_GREEN, -1 );
+			cv::circle( image, contour[0][defect[2]], 5, HALF_RED, -1 );
 			cv::Point midPoint( 
 				(contour[0][defect[0]].x + contour[0][defect[1]].x) / 2,
 				(contour[0][defect[0]].y + contour[0][defect[1]].y) / 2);
 
 			line( image, midPoint, contour[0][defect[2]],
-					COLOR_ROT_RECT, 3, CV_AA );
+					HALF_BLUE, 3, CV_AA );
 		}
 
+		if(palmCenter.x > 0 && palmRadius)
+			cv::circle( image, palmCenter, palmRadius, HALF_GREEN, 3 );
 
 		// // draw bounding rotated rectangles
 		// for( int j = 0; j < 4; j++ )
 		// 	line( image, rotPoints[j], rotPoints[(j+1)%4],
-		// 			COLOR_ROT_RECT, 3, CV_AA );
+		// 			HALF_BLUE, 3, CV_AA );
 
-		// rectangle(image, boxRect, COLOR_BD_RECT, 3);
+		// rectangle(image, boxRect, HALF_GREEN, 3);
 
 		// QString str = QString("%1").arg(mom.m00);
 		// putText(image, str.toString(), boxRect.br(),
 		// 	cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
 
+	}
+
+	QString getData()
+	{
+		QString data = QString(
+					"Type: %9"
+					"\nB Width: %1  B Height: %2"
+					"\nR Width: %3  R Height: %4"
+					"\nB Ratio: %5  M Ratio : %6"
+					"\nDefects: %7  Palm Rad: %8\n")
+					.arg(boxRect.width)
+					.arg(boxRect.height)
+					.arg(pointDist(rotPoints[1], rotPoints[0]), 3, 'g')
+					.arg(pointDist(rotPoints[1], rotPoints[2]), 3, 'g')
+					.arg(bRatio, 3, 'g')
+					.arg(mRatio, 3, 'g')
+					.arg(defects.size())
+					.arg(palmRadius)
+					.arg(getType());
+
+		for(cv::Vec4i defect : defects)
+		{
+			data.append(QString("\nDefect len: %1")
+							.arg(defect[3]/256.0, 4, 'g'));
+		}
+		return data;
 	}
 
 

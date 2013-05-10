@@ -75,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 	//default settings
-	backProcess = histEnable = handDetect = false;
+	backProcess = histEnable = handDetect = measureHand = false;
 	cHist = ColorHistogram();
 
 	//Environments
@@ -212,20 +212,15 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 	if(!user.curHand.isNone())
 	{
 		cv::Mat handROI(img, user.curHand.getBoundRect());
-		displayMat(handROI, ui->label_HandDisplay);
+		if(handROI.data)
+			displayMat(handROI, ui->label_HandDisplay);
 
 		// std::cout << user.curHand.bRatio << std::endl;
 
-		ui->textBrowser->setText(QString(
-					"User bratios(F/S): (%1 / %2)"
-					"\nBox Width: %3\tBox Height: %4"
-					"\nbRatio: %5\nmRatio: %6")
-					.arg(user.fist.getB())
-					.arg(user.spread.getB())
-					.arg(user.curHand.getBoundRect().width)
-					.arg(user.curHand.getBoundRect().height)
-					.arg(user.curHand.getB())
-					.arg(user.curHand.getM()));
+		ui->textBrowser->setText(QString("User bratios(F/S): (%1 / %2)")
+										.arg(user.fist.getB())
+                                        .arg(user.spread.getB()));
+        ui->textBrowser->append(user.curHand.getData());
 	}
 
 	return result;

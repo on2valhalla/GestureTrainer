@@ -47,8 +47,7 @@ class SkinDetector
 			hsvThreshold[1][0] = 180;
 			hsvThreshold[1][1] = 255;
 			hsvThreshold[1][2] = 255;
-			erode = dilate = blur = true;
-			invert = false;
+			erode = dilate = blur = invert = true;
 		}
 
 		void setInvert(bool set)
