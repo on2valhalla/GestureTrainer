@@ -31,7 +31,7 @@ enum HandType{
 
 class Hand
 {
-     friend class User;
+	 friend class User;
 
 private:
 	// VARIABLES
@@ -47,10 +47,10 @@ private:
 	cv::Moments mom;
 
 	// COLORS
-	cv::Scalar COLOR_CONTOUR,
-				COLOR_HULL,
-				COLOR_ROT_RECT,
-				COLOR_BD_RECT;
+	cv::Scalar COLOR_CONTOUR = cv::Scalar(150,150,150),
+				COLOR_HULL = cv::Scalar(150,150,150),
+				COLOR_ROT_RECT = cv::Scalar(124,0,0),
+				COLOR_BD_RECT = cv::Scalar(0,124,0);
 
 
 
@@ -71,43 +71,15 @@ public:
 	}
 
 	//Constructor
-    Hand(std::vector<cv::Point> c)
+	Hand(std::vector<cv::Point> c)
 	{
-		COLOR_CONTOUR = cv::Scalar(150,150,150);
-		COLOR_HULL = cv::Scalar(150,150,150);
-		COLOR_ROT_RECT = cv::Scalar(124,0,0);
-		COLOR_BD_RECT = cv::Scalar(0,124,0);
 
-        type = UNK;
+		type = UNK;
 
 		contour.push_back(c);
 
-		// min fit rectangle (rotated)
-		rotRect = cv::minAreaRect( cv::Mat(contour[0]) );
-		rotRect.points(rotPoints);
-
-		// bounding rectangle of the hand
-		boxRect = boundingRect(contour[0]);
-
-		//calculate the moments of the hand
-		mom = cv::moments(cv::Mat(contour[0]));
-
-		// convex hull and defects
-		std::vector<std::vector<int> > hullIdxs;
-		hullIdxs.push_back(std::vector<int>());
-		cv::convexHull(cv::Mat(contour[0]), hullIdxs[0]);
-
-		// gather the hull points into a vector for drawing
-		hull = std::vector<std::vector<cv::Point> >(1);
-		for(int i : hullIdxs[0])
-			hull[0].push_back(contour[0][i]);
-
-		// std::cout << hull[0].size() << std::endl;
-
-		// defects
-		cv::convexityDefects(contour[0], hullIdxs[0], defects);
-
-		// findType();
+		calcTraits();
+		findType();
 	}
 
 	//copy constructor
@@ -131,7 +103,7 @@ public:
 		mom = h.mom;
 		defects = h.defects;
 		bRatio = h.mRatio;
-        mRatio = h.bRatio;
+		mRatio = h.bRatio;
 
 	}
 
@@ -163,7 +135,7 @@ public:
 		mom = rhs.mom;
 		defects = rhs.defects;
 		bRatio = rhs.mRatio;
-        mRatio = rhs.bRatio;
+		mRatio = rhs.bRatio;
 
 
 		return *this;
@@ -204,10 +176,53 @@ public:
 		return mRatio;
 	}
 
-	bool isNone()
+	bool isNone() const
 	{
 		return type == NONE;
 	}
+
+	void calcTraits()
+	{
+		// min fit rectangle (rotated)
+		rotRect = cv::minAreaRect( cv::Mat(contour[0]) );
+		rotRect.points(rotPoints);
+
+		// bounding rectangle of the hand
+		boxRect = boundingRect(contour[0]);
+
+		//calculate the moments of the hand
+		mom = cv::moments(cv::Mat(contour[0]));
+
+		// convex hull and defects
+		std::vector<std::vector<int> > hullIdxs;
+		hullIdxs.push_back(std::vector<int>());
+		cv::convexHull(cv::Mat(contour[0]), hullIdxs[0]);
+
+		// gather the hull points into a vector for drawing
+		hull = std::vector<std::vector<cv::Point> >(1);
+		for(int i : hullIdxs[0])
+			hull[0].push_back(contour[0][i]);
+
+		// std::cout << hull[0].size() << std::endl;
+
+		// defects
+		cv::convexityDefects(contour[0], hullIdxs[0], defects);
+	}
+
+	// void smooth(const Hand& lastHand)
+	// {
+	// 	if(!lastHand.isNone())
+	// 	{
+	// 		for (unsigned int i = 0, j = 0; 
+	// 			i < contour[0].size() || j < lastHand.contour[0].size(); 
+	// 			i++, j++)
+	// 		{
+	// 			contour[0][i] = midPoint(contour[0][i], lastHand.contour[0][j]);
+	// 		}
+	// 	}
+
+	// 	calcTraits();
+	// }
 
 //	END Modifiers/Accessors
 //##############################################################################
@@ -224,7 +239,12 @@ public:
 		return sqrt(dx * dx + dy * dy);
 	}
 
-    void findType()
+	cv::Point midPoint(const cv::Point &p1, const cv::Point &p2)
+	{
+        return cv::Point( (p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+	}
+
+	void findType()
 	{
 		bRatio = static_cast<double>(boxRect.width)/boxRect.height;
 		std::cout << bRatio << std::endl;

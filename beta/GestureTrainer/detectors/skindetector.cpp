@@ -28,26 +28,32 @@ cv::Mat SkinDetector::processHSV(const cv::Mat &hsvImg)
 	resultImg.create(hsvImg.rows, hsvImg.cols, CV_8U);
 
 	//reduce the colors for faster processing
-	ColorHistogram h;
-    h.colorReduce(hsvImg, 12);
+	// ColorHistogram h;
+	// h.colorReduce(hsvImg, 12);
 
-    //threshold the image with the stored masks
+	cv::Mat morphImg;
+	cv::GaussianBlur(hsvImg, morphImg, cv::Size(11,11), 0);
+	cv::medianBlur(morphImg, morphImg, 11);
+
+	//threshold the image with the stored masks
 	cv::inRange(hsvImg, hsvThreshold[0], hsvThreshold[1], resultImg);
 
 	//filtering parameter, increase size for greater effect
-	cv::Mat morpElement(5,5,CV_8U,cv::Scalar(1));
+	// cv::Mat morpElement(5,5,CV_8U,cv::Scalar(1));
+	cv::Mat morpElement = 
+		cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9,9), cv::Point(4,4));
 
 	//current morphological processing functions to 
 	//close the skin blobs
 	if(invert)
-	    cv::bitwise_not(resultImg, resultImg);
+		cv::bitwise_not(resultImg, resultImg);
 	if(erode)
-	    cv::erode(resultImg, resultImg, morpElement);
+		cv::erode(resultImg, resultImg, morpElement);
 	if(dilate)
-	    cv::dilate(resultImg, resultImg, morpElement);
+		cv::dilate(resultImg, resultImg, morpElement);
 	if(blur)
-	    cv::blur(resultImg, resultImg, morpElement.size());
-    
+		cv::GaussianBlur(resultImg, resultImg, cv::Size(3,3), 0);
+	
 
 	//optional morphological processing is helpful
 	//depending on the background environment

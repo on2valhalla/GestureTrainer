@@ -55,15 +55,15 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
 					CV_CHAIN_APPROX_TC89_L1); // an approximation algorithm
 	//----------------END Contours------------------
 
-    if(contours.size() == 0)
-        return resultImg;
+	if(contours.size() == 0)
+		return resultImg;
 
 	//------------------Find Largest Hand----------------
 	int maxMass = 0;
 	Hand maxHand = Hand();
 
 	// iterate through all the top-level contours
-	int idx = 0;
+    int idx = 0;
 	for( ; idx >= 0; idx = hierarchy[idx][0] )
 	{
 		// find if current contour intersects with a face
@@ -83,7 +83,7 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
 
 		// Find the largest contour
 		int curMass = MIN_HAND_SIZE;
-        if(idx < contours.size())
+        if(idx < (int)contours.size())
 			curMass = (int)cv::moments( cv::Mat(contours[idx]) ).m00;
 		if(curMass > MIN_HAND_SIZE && curMass > maxMass)
 		{
@@ -91,6 +91,9 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
 			maxHand = Hand(contours[idx]);
 		}
 	}
+	
+	// if(!maxHand.isNone())
+	// 	maxHand.smooth(lastHand);
 
 	lastHand = maxHand;
 	lastHand.drawHand(resultImg);
