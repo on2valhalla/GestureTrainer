@@ -106,7 +106,7 @@ public:
 		// defects
 		cv::convexityDefects(contour[0], hullIdxs[0], defects);
 
-		findType();
+		// findType();
 	}
 
 	//copy constructor

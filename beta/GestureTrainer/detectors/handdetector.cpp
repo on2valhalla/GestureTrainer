@@ -55,7 +55,8 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
 					CV_CHAIN_APPROX_TC89_L1); // an approximation algorithm
 	//----------------END Contours------------------
 
-
+    if(contours.size() == 0)
+        return resultImg;
 
 	//------------------Find Largest Hand----------------
 	int maxMass = 0;
@@ -82,7 +83,7 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
 
 		// Find the largest contour
 		int curMass = MIN_HAND_SIZE;
-        if(!contours[idx].empty())
+        if(idx < contours.size())
 			curMass = (int)cv::moments( cv::Mat(contours[idx]) ).m00;
 		if(curMass > MIN_HAND_SIZE && curMass > maxMass)
 		{

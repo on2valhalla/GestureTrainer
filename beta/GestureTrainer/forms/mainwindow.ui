@@ -590,9 +590,9 @@
       <property name="geometry">
        <rect>
         <x>270</x>
-        <y>200</y>
-        <width>251</width>
-        <height>231</height>
+        <y>180</y>
+        <width>250</width>
+        <height>250</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -618,7 +618,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fill the box below with the hand gesture shown to the left: &lt;/p&gt;&lt;p&gt;Attempt to fill the space, but provide more empty space rather than cutting off part of the hand.&lt;/p&gt;&lt;p&gt;When you feel you have a good capture press the SPACE BAR.&lt;/p&gt;&lt;p&gt;Look at the capture, if it is a good capture, press ENTER. Otherwise press ( X ) to begin capture again&lt;/p&gt;&lt;p&gt;Repeat this process until all captures are done (shown in the left pane)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fill the box below with the hand gesture shown to the left. Attempt to fill the space, but provide more empty space rather than cutting off part of the hand.&lt;/p&gt;&lt;p&gt;When you feel you have a good capture press the SPACE BAR.&lt;/p&gt;&lt;p&gt;Look at the capture, if it is a good capture, press ENTER. Otherwise press SPACE to begin capture again. To start over both, press the ( X ) key&lt;/p&gt;&lt;p&gt;Repeat this process until all captures are done (shown in the left pane)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -627,10 +627,10 @@
      <widget class="QLabel" name="label_User">
       <property name="geometry">
        <rect>
-        <x>0</x>
-        <y>200</y>
-        <width>251</width>
-        <height>231</height>
+        <x>10</x>
+        <y>180</y>
+        <width>250</width>
+        <height>250</height>
        </rect>
       </property>
       <property name="frameShape">

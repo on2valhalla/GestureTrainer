@@ -65,8 +65,10 @@ protected:
 	// Utilities
 	void displayMat(const cv::Mat img, QLabel *label);
 	cv::Mat processSkin( const cv::Mat img );
-    void processHand( const cv::Mat color, const cv::Mat binary );
+    cv::Mat processHand( const cv::Mat color, const cv::Mat binary );
 	cv::Mat detectHand( const cv::Mat img );
+	cv::Mat trainHand( cv::Mat img );
+
     bool copyFile(const QString& src, const QString& dst);
 
 	void loadDefaultHands();
@@ -111,6 +113,8 @@ private:
 		CAMERA = 0,
 	// Timer delay in ms
 		TIMER_DELAY = 25;
+
+	cv::Scalar COLOR_CAP_RECT = cv::Scalar(0,0,125);
 
     std::string LOC_PREFS = "../../../../GestureTrainer/prefs/location.prefs.dat";
 

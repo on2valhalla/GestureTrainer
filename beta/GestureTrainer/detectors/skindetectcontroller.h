@@ -86,7 +86,8 @@ class SkinDetectController
 		// Sets the input hsvImage.
 		bool setInputImage(cv::Mat imgIn)
 		{
-			// convert color space
+            // convert color space
+            hsvImage.create(imgIn.rows, imgIn.cols, imgIn.type());
 			cv::cvtColor(imgIn, hsvImage, CV_BGR2HSV);
 
 			if (!hsvImage.data)

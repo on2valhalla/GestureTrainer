@@ -78,8 +78,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	backProcess = histEnable = handDetect = false;
 	cHist = ColorHistogram();
 
-    //Environments
-    QFile file(LOC_PREFS.c_str());
+	//Environments
+	QFile file(LOC_PREFS.c_str());
 	bool ret = file.open(QIODevice::ReadOnly | QIODevice::Text);
 //    qDebug() << QDir::currentPath();
 	if( ret )
@@ -88,8 +88,8 @@ MainWindow::MainWindow(QWidget *parent) :
 		while(!stream.atEnd())
 		{
 			QString line = stream.readLine();
-            if(line.size() < 10)
-                continue;
+			if(line.size() < 10)
+				continue;
 //            qDebug() << line;
 			QStringList strList = line.split("#", QString::SkipEmptyParts);
 			std::vector<cv::Scalar> loc = {cv::Scalar(), cv::Scalar()};
@@ -121,7 +121,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+	delete ui;
 	delete timer;
 }
 
@@ -168,8 +168,9 @@ void MainWindow::displayMat(const cv::Mat image, QLabel *label)
 cv::Mat MainWindow::processSkin( const cv::Mat img )
 {
 	//send SkinDetector the frame
-	SkinDetectController::getInstance()->setInputImage(img);
-
+	bool set = SkinDetectController::getInstance()->setInputImage(img);
+	if (!set)
+		qDebug() << "Image not set!!!!!";
 	//process the frame
 	SkinDetectController::getInstance()->process();
 	
@@ -182,16 +183,19 @@ cv::Mat MainWindow::processSkin( const cv::Mat img )
 	Simplification utility method, stores the hand with the user
 	when given a Color and BINARY image, filtered for skin
 */
-void MainWindow::processHand( const cv::Mat color, const cv::Mat binary )
+cv::Mat MainWindow::processHand( const cv::Mat color, const cv::Mat binary )
 {
 	// send HandDetector the processed frame
-	HandDetectController::getInstance()->setInputImages(color, binary);
+	bool set = HandDetectController::getInstance()->setInputImages(color, binary);
+	if (!set)
+		qDebug() << "Images not set!!!!!";
 
 	// find the hand blob and store
 	HandDetectController::getInstance()->findHand();
 
 	// display hand ROI in small window
 	user.curHand = HandDetectController::getInstance()->getLastHand();
+	return HandDetectController::getInstance()->getLastResult();
 }
 
 /*
@@ -202,7 +206,7 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 {
 	// process skin
 	cv::Mat binary = processSkin(img);
-	processHand(img, binary);
+	cv::Mat result = processHand(img, binary);
 
 	// display hand ROI in small window
 	if(!user.curHand.isNone())
@@ -217,9 +221,24 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 					.arg(user.curHand.getM()));
 	}
 
-	cv::Mat result =  HandDetectController::getInstance()->getLastResult();
 	return result;
 
+}
+
+cv::Mat MainWindow::trainHand( const cv::Mat img )
+{
+	cv::Mat result = img.clone();
+	cv::Rect captureRect(img.rows/10, img.cols/10, 250, 250);
+
+	rectangle(result, captureRect, COLOR_CAP_RECT, 3);
+
+	cv::Mat capROI(img, captureRect);
+	cv::Mat binCapROI = processSkin(capROI);
+	capROI = processHand(capROI, binCapROI);
+	displayMat(capROI, ui->label_Train);
+
+
+	return result;
 }
 
 void MainWindow::loadDefaultHands()
@@ -290,7 +309,7 @@ void MainWindow::setThreshold()
 */
 void MainWindow::updateTimer()
 {
-	cv::Mat img;
+	cv::Mat img, result;
 	cap >> img; //capture a frame
 
 	if(histEnable)
@@ -299,25 +318,14 @@ void MainWindow::updateTimer()
 		cv::imshow("Histogram", histogram);
 	}
 	if(backProcess)
-	{
-		cv::Mat result = processSkin(img);
-		if (!result.empty())
-			img = result;
-	}
-	if(measureHand)
-	{
-		// Doooo things here for measuring
+		result = processSkin(img);
+	else if(measureHand)
+		result = trainHand(img);
+	else if(handDetect)
+		result = detectHand(img);
 
-		// user.fist = .....
-		// user.spread = .....
-	}
-	if(handDetect)
-	{
-		cv::Mat result = detectHand(img);
-
-		if (!result.empty())
-			img = result;
-	}
+	if (!result.empty())
+		img = result;
 	displayMat(img, ui->label_Camera);
 }
 
@@ -348,6 +356,8 @@ void MainWindow::on_tabWidget_currentChanged(int index)
 			histEnable = false;
 			handDetect = false;
 			measureHand = true;
+			user.fist = Hand();
+			user.spread = Hand();
 			break;
 		case DETECT_TAB:
 			backProcess = false;
@@ -405,21 +415,32 @@ void MainWindow::toggleCamera()
 
 }
 
-
+/*
+	Handles all of the keypress events for the form,
+	But mostly used for the measurement tab
+*/
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
 	qDebug() << "KeyPress" << e->key();
-	if(e->key() == 32 && measureHand) // SPACE BAR
+	if( e->key() == 32 ) // SPACE BAR
 	{
-
+		toggleCamera();
 	}
 	else if(e->key() == 16777220 && measureHand) // ENTER
 	{
+		trainHand( SkinDetectController::getInstance()->getInputImage() );
 
+		if(user.fist.isNone())
+			user.fist = user.curHand;
+		else if(user.spread.isNone())
+			user.spread = user.curHand;
+
+		toggleCamera();
 	}
 	else if(e->key() == 88 && measureHand) // x
 	{
-
+		user.fist = Hand();
+		user.spread = Hand();
 	}
 }
 
@@ -472,23 +493,23 @@ void MainWindow::showHistogram()
 
 void MainWindow::on_pushButton_Save_clicked()
 {
-    QFile file(LOC_PREFS.c_str());
-    if (!file.open(QIODevice::Append | QIODevice::Text))
-         return;
+	QFile file(LOC_PREFS.c_str());
+	if (!file.open(QIODevice::Append | QIODevice::Text))
+		 return;
 
-     QTextStream out(&file);
+	 QTextStream out(&file);
 
-     bool ok;
-     QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
-                                           tr("Location name:"), QLineEdit::Normal,
-                                          "", &ok);
-     if(ok && !text.isEmpty())
-         out << text << "#";
-     else
-         out << "unknown#";
+	 bool ok;
+	 QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+										   tr("Location name:"), QLineEdit::Normal,
+										  "", &ok);
+	 if(ok && !text.isEmpty())
+		 out << text << "#";
+	 else
+		 out << "unknown#";
 
-     out << min[0] << "#" << min[1] << "#" << min[2] << "#" ;
-     out << max[0] << "#" << max[1] << "#" << max[2] << "\n" ;
+	 out << min[0] << "#" << min[1] << "#" << min[2] << "#" ;
+	 out << max[0] << "#" << max[1] << "#" << max[2] << "\n" ;
 
 
 	// add to list
@@ -653,10 +674,10 @@ void MainWindow::on_pushButton_Detect_clicked()
 
 void MainWindow::on_comboBox_currentIndexChanged(int index)
 {
-//	qDebug() << "Location:  " << index;
+	// qDebug() << "Location:  " << index;
 	min = locations[index][0];
 	max = locations[index][1];
-    setSliders();
+	setSliders();
 }
 
 // END Slots
