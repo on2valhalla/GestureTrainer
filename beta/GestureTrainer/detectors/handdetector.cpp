@@ -17,7 +17,6 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat binImg)
 	if (binImg.empty() || colorImg.empty())
 	  return cv::Mat();
 	resultImg = colorImg.clone();
-	cv::Mat binaryImg = binImg.clone();
 
 
 	//------------------Find Faces----------------
@@ -46,9 +45,10 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat binImg)
 
 	//------------------Find Contours----------------
 	// find contours in the blob image
+	cv::Mat binImgClone = binImg.clone();
 	std::vector< std::vector<cv::Point> > contours;
 	std::vector<cv::Vec4i> hierarchy;
-	cv::findContours(binaryImg,
+	cv::findContours(binImgClone,
 					contours, // a vector of contours
 					hierarchy, // a hierarchy of contours if there are parent
 								//child relations in the image
@@ -95,11 +95,13 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat binImg)
 		approxPolyDP(maxContour, maxContour, 2, true);
 
 	lastHand = Hand(maxContour);
-	lastHand.drawHand(resultImg);
+	// lastHand.eliminateWrist(binImg);
 
 	cv::namedWindow("fingers");
 	cv::Mat fingers = lastHand.findFingers(binImg);
 	cv::imshow("fingers", fingers);
+
+	lastHand.drawHand(resultImg);
 	//------------------END Find Hand--------------------
 
 
