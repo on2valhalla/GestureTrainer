@@ -23,6 +23,14 @@
 #include "../include/user.h"
 
 	
+// COLORS
+static cv::Scalar HALF_GREY = cv::Scalar(75,75,75),
+				GREY = cv::Scalar(125,125,125),
+				BLACK = cv::Scalar(0,0,0),
+				WHITE = cv::Scalar(255,255,255),
+				HALF_BLUE = cv::Scalar(125,0,0),
+				HALF_RED = cv::Scalar(0,0,125),
+				HALF_GREEN = cv::Scalar(0,125,0);
 
 
 enum HandType{
@@ -53,18 +61,17 @@ private:
 	double bRatio;
 	double mRatio;
 	cv::Moments mom;
-	cv::Point palmCenter;
-	int palmRadius;
+	cv::Point2f palmCenter;
+	float palmRadius;
+	// cv::RotatedRect palmEllipse;
 
-	// COLORS
-	cv::Scalar HALF_GREY = cv::Scalar(75,75,75),
-				GREY = cv::Scalar(125,125,125),
-				HALF_BLUE = cv::Scalar(125,0,0),
-				HALF_RED = cv::Scalar(0,0,125),
-				HALF_GREEN = cv::Scalar(0,125,0);
+	int numFingers;
+	std::vector<std::vector<cv::Point > > fingerContours;
 
-	static const unsigned int MAX_DEFECTS = 8;
-	const double MIN_DEFECT_SIZE = 5.0;
+
+	static const unsigned int MAX_DEFECTS = 8,
+							MIN_FINGER_SIZE = 500;
+	const double MIN_DEFECT_SIZE = 10.0;
 
 
 
@@ -113,6 +120,9 @@ public:
 		mom = h.mom;
 		palmCenter = h.palmCenter;
 		palmRadius = h.palmRadius;
+		numFingers = h.numFingers;
+		fingerContours = h.fingerContours;
+		// palmEllipse = h.palmEllipse;
 	}
 
 	//assignment operator
@@ -132,6 +142,9 @@ public:
 			mom = rhs.mom;
 			palmCenter = rhs.palmCenter;
 			palmRadius = rhs.palmRadius;
+			numFingers = rhs.numFingers;
+			fingerContours = rhs.fingerContours;
+			// palmEllipse = rhs.palmEllipse;
 		}
 		return *this;
 	}
@@ -195,10 +208,6 @@ public:
 
 	void calcTraits()
 	{
-		palmCenter = cv::Point(0,0);
-		palmRadius = 0;
-
-
 		// min fit rectangle (rotated)
 		rotRect = cv::minAreaRect( cv::Mat(contour[0]) );
 		rotRect.points(rotPoints);
@@ -226,37 +235,30 @@ public:
 		std::vector<cv::Vec4i> tmpDefects;
 		cv::convexityDefects(contour[0], hullIdxs[0], tmpDefects);
 		// cv::convexityDefects(contour[0], hullIdxs[0], defects);
+		std::vector<cv::Point> palmPoints;
 
 		if(tmpDefects.size() <= 0)
 			return;
 		/* Average depth points to get hand center */
-		int x = 0, y = 0;
+		// int x = 0, y = 0;
 		for (cv::Vec4i defect : tmpDefects)
 		{
 			if(defect[3]/256.0 < MIN_DEFECT_SIZE)
 				// || defects.size() > MAX_DEFECTS)
 				continue;
-			x += contour[0][defect[2]].x;
-			y += contour[0][defect[2]].y;
+			// x += contour[0][defect[2]].x;
+			// y += contour[0][defect[2]].y;
 			defects.push_back(defect);
+			palmPoints.push_back(contour[0][defect[2]]);
 		}
 
-		if(defects.size() <= 0)
+		palmCenter = cv::Point2f(0,0);
+		palmRadius = 0;
+
+		if(palmPoints.size() <= 0)
 			return;
 
-		palmCenter.x = x/defects.size();
-		palmCenter.y = y/defects.size();
-
-		/* Compute hand radius as mean of distances of
-		   defects' depth point to hand center */
-		int dist = 0;
-		for(cv::Vec4i defect : defects)
-		{
-			dist += pointDist(palmCenter, contour[0][defect[2]]);
-		}
-
-		palmRadius = ((double)dist) / defects.size();
-		qDebug() << "radius: " << palmRadius;
+		cv::minEnclosingCircle(palmPoints, palmCenter, palmRadius);
 	}
 
 
@@ -318,15 +320,15 @@ public:
 			// Skip the smaller defects
 			if(defect[3]/256.0 < MIN_DEFECT_SIZE)
 				continue;
-			cv::circle( image, contour[0][defect[0]], 5, HALF_BLUE, -1 );
-			cv::circle( image, contour[0][defect[1]], 5, HALF_GREEN, -1 );
+			// cv::circle( image, contour[0][defect[0]], 5, HALF_BLUE, -1 );
+			// cv::circle( image, contour[0][defect[1]], 5, HALF_GREEN, -1 );
 			cv::circle( image, contour[0][defect[2]], 5, HALF_RED, -1 );
-			cv::Point midPoint( 
-				(contour[0][defect[0]].x + contour[0][defect[1]].x) / 2,
-				(contour[0][defect[0]].y + contour[0][defect[1]].y) / 2);
+			// cv::Point midPoint( 
+			// 	(contour[0][defect[0]].x + contour[0][defect[1]].x) / 2,
+			// 	(contour[0][defect[0]].y + contour[0][defect[1]].y) / 2);
 
-			line( image, midPoint, contour[0][defect[2]],
-					HALF_BLUE, 3, CV_AA );
+			// line( image, midPoint, contour[0][defect[2]],
+			// 		HALF_BLUE, 3, CV_AA );
 		}
 
 		if(palmCenter.x > 0 && palmRadius)
@@ -371,6 +373,70 @@ public:
 		return data;
 	}
 
+	cv::Mat findFingers(cv::Mat binaryImg)
+	{
+
+		if(type == NONE || palmRadius == 0)
+			return binaryImg;
+		
+		cv::Mat handROI(binaryImg, boxRect);
+		if(!handROI.data)
+			return binaryImg;
+
+		cv::Point2f ROIPalmCenter(palmCenter.x - boxRect.tl().x,
+							palmCenter.y - boxRect.tl().y);
+
+		// get the new containing ROI for hand without arm
+		cv::Mat newHandROI(handROI, 
+						cv::Range(0, (ROIPalmCenter.y+palmRadius)%handROI.rows),
+						cv::Range::all());
+
+		// fill in palm and below to cut off fingers
+		cv::circle( newHandROI, ROIPalmCenter, palmRadius, BLACK, CV_FILLED);
+
+		// eliminate remnants of wrist
+		cv::Rect wrist(cv::Point(ROIPalmCenter.x - palmRadius, ROIPalmCenter.y),
+					cv::Point(ROIPalmCenter.x - palmRadius, handROI.cols-1));
+		cv::rectangle(newHandROI, wrist, BLACK, CV_FILLED);
+
+		cv::findContours(handROIcopy, fingerContours, CV_RETR_EXTERNAL,
+						CV_CHAIN_APPROX_TC89_L1);
+
+
+		for(unsigned int i = 0; i < fingerContours.size(); i++)
+		{
+			if(cv::contourArea(fingerContours[i]) < MIN_FINGER_SIZE)
+				fingerContours.erase(i);
+			// QString str = QString("%1")
+			// 					.arg(cv::contourArea(fingerContours[i]));
+			// putText(handROI, str.toStdString(), fingerContours[i][0],
+			// 	cv::FONT_HERSHEY_COMPLEX_SMALL, 1, WHITE);
+		}
+
+
+		// cv::ellipse(handROI, palmEllipse, BLACK, -1);
+		// cv::ellipse(handROIcopy, palmEllipse, BLACK, -1);
+		// cv::circle( handROI, ROIPalmCenter, palmRadius, BLACK, CV_FILLED);
+		// cv::circle( handROIcopy, ROIPalmCenter, palmRadius, BLACK, CV_FILLED );
+
+		// // black out everything below the palm
+		// cv::Point2f belowPalm(0, ROIPalmCenter.y+palmRadius);
+		// cv::Point2f bottomRight(handROI.rows -1, handROI.cols -1);
+		// cv::rectangle( handROI, belowPalm, bottomRight, BLACK, CV_FILLED);
+		// cv::rectangle( handROIcopy, belowPalm, bottomRight, BLACK, CV_FILLED);
+
+
+
+
+		// QString str = QString("%1")
+		// 					.arg(fingerContours.size());
+		// putText(handROI, str.toStdString(), cv::Point(0,0),
+		// 	cv::FONT_HERSHEY_COMPLEX_SMALL, 1, WHITE);
+
+
+		return newHandROI;
+
+	}
 
 //	END Utility Functions
 //##############################################################################

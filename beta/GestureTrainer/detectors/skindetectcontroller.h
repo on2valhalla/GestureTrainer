@@ -36,7 +36,7 @@ class SkinDetectController
 	public:
 		SkinDetectController()
 		{
-            sknDetect = new SkinDetector();
+			sknDetect = new SkinDetector();
 		}
 
 		// Deletes all processor objects created by the controller.
@@ -51,7 +51,7 @@ class SkinDetectController
 		{
 
 		  if (singleton == 0)
-		    singleton= new SkinDetectController;
+			singleton= new SkinDetectController;
 
 		  return singleton;
 		}
@@ -61,8 +61,8 @@ class SkinDetectController
 		{
 		  if (singleton != 0)
 		  {
-		      delete singleton;
-		      singleton= 0;
+			  delete singleton;
+			  singleton= 0;
 		  }
 		}
 		
@@ -80,14 +80,14 @@ class SkinDetectController
 			if (!hsvImage.data)
 			  return false;
 			else
-		      return true;
+			  return true;
 		}
 
 		// Sets the input hsvImage.
 		bool setInputImage(cv::Mat imgIn)
 		{
-            // convert color space
-            hsvImage.create(imgIn.rows, imgIn.cols, imgIn.type());
+			// convert color space
+			hsvImage.create(imgIn.rows, imgIn.cols, imgIn.type());
 			cv::cvtColor(imgIn, hsvImage, CV_BGR2HSV);
 
 			if (!hsvImage.data)

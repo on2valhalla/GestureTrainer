@@ -12,11 +12,12 @@
 
 
 
-cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
+cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat binImg)
 {
-	if (blobImg.empty() || colorImg.empty())
+	if (binImg.empty() || colorImg.empty())
 	  return cv::Mat();
 	resultImg = colorImg.clone();
+	cv::Mat binaryImg = binImg.clone();
 
 
 	//------------------Find Faces----------------
@@ -47,7 +48,7 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
 	// find contours in the blob image
 	std::vector< std::vector<cv::Point> > contours;
 	std::vector<cv::Vec4i> hierarchy;
-	cv::findContours(blobImg,
+	cv::findContours(binaryImg,
 					contours, // a vector of contours
 					hierarchy, // a hierarchy of contours if there are parent
 								//child relations in the image
@@ -58,12 +59,12 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
 	if(contours.size() <= 0)
 		return resultImg;
 
-	//------------------Find Largest Hand----------------
+	//------------------Find Largest Contour----------------
 	int maxMass = 0;
 	std::vector<cv::Point> maxContour;
 
 	// iterate through all the top-level contours
-    int idx = 0;
+	int idx = 0;
 	for( ; idx >= 0; idx = hierarchy[idx][0] )
 	{
 		// find if current contour intersects with a face
@@ -95,6 +96,10 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat blobImg)
 
 	lastHand = Hand(maxContour);
 	lastHand.drawHand(resultImg);
+
+	cv::namedWindow("fingers");
+	cv::Mat fingers = lastHand.findFingers(binImg);
+	cv::imshow("fingers", fingers);
 	//------------------END Find Hand--------------------
 
 
