@@ -194,7 +194,7 @@ cv::Mat MainWindow::processHand( const cv::Mat color, const cv::Mat binary )
 	HandDetectController::getInstance()->findHand();
 
 	// display hand ROI in small window
-	user.curHand = HandDetectController::getInstance()->getLastHand();
+	user.setCurHand(HandDetectController::getInstance()->getLastHand());
 	return HandDetectController::getInstance()->getLastResult();
 }
 
