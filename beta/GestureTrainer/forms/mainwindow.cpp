@@ -217,9 +217,11 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 
 		// std::cout << user.curHand.bRatio << std::endl;
 
-		ui->textBrowser->setText(QString("User bratios(F/S): (%1 / %2)")
-										.arg(user.fist.getB())
-                                        .arg(user.spread.getB()));
+//		ui->textBrowser->setText(QString("User bratios(F/S): (%1 / %2)")
+//										.arg(user.fist.getB())
+//                                        .arg(user.spread.getB()));
+
+        ui->textBrowser->setText(user.getData());
         ui->textBrowser->append(user.curHand.getData());
 	}
 
