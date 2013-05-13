@@ -422,7 +422,8 @@ public:
         double handMass = mom.m00;
 
         phRatio = palmArea/handMass;
-        if(phRatio > 0.70)
+        //if(phRatio < 0.65)
+	if(phRatio > 0.70)
         	type = FIST;
         else
         	type = PALM;

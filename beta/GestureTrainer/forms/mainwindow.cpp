@@ -467,7 +467,31 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 	}
 }
 
+//void MainWindow::trainUser()
+//{
+//	std::vector<std::string> images;
+//	images.push_back("A"); 
+//	images.push_back("I"); 
+//	images.push_back("L"); 
+//	images.push_back("T"); 
+//	images.push_back("V"); 
+//	images.push_back("W"); 
+//	images.push_back("Y"); 
 
+//    for(std::string image : images)
+//	{
+//        QString imName = QString::fromStdString(":/goal/" + image + ".jpg");
+//        QPixmap img_pix(imName);
+//		ui->label_Goal->setPixmap(img_pix.scaled(
+//				ui->label_Goal->size(), Qt::KeepAspectRatio));
+
+//        while(!(user.contComparing(image)))
+//		{
+
+//		}
+//	}
+
+//}
 
 
 //---------Background Buttons--------------
