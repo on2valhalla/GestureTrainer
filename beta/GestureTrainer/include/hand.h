@@ -57,6 +57,8 @@ enum HandType{
 	//FILL IN MORE TYPES AS WE FIGURE THEM OUT
 	UNK,
 	FIST,
+	T,
+	A,
 	PALM,
 	FINGERS,
 	NONE
@@ -128,7 +130,7 @@ public:
 			contour.push_back(c);
 
 			calcTraits();
-			findType();
+            findClass();
 		}
 	}
 
@@ -226,6 +228,10 @@ public:
 		{
 			case UNK:
 				return QString("UNK");
+			case T:
+				return QString("T");
+			case A:
+				return QString("A");
 			case FIST:
 				return QString("FIST");
 			case PALM:
@@ -360,8 +366,6 @@ public:
 	}
 
 	/*
-		Shrinks the box rectangle to exclude the wrist
-
 		requires calcTraits to run first
 	*/
 	bool eliminateWrist(const cv::Mat binaryImg)
@@ -413,23 +417,16 @@ public:
 		return cv::Point( (p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
 	}
 
-	void findType()
+	void findClass()
 	{
         double handMass = mom.m00;
 
         phRatio = palmArea/handMass;
-        if(phRatio > 0.7)
-        {
+        if(phRatio > 0.70)
         	type = FIST;
-        }
         else
-        {
         	type = PALM;
-        }
-
 	}
-
-	
 
 	// Draws all the relevant hand data (bounding and rotated rects, contour)
 	// on a cv::Mat that is provided
@@ -479,16 +476,28 @@ public:
 
 		// rectangle(image, boxRect, HALF_GREEN, 3);
 
-		// QString str = QString("%1").arg(mom.m00);
-		// putText(image, str.toString(), boxRect.br(),
-		// 	cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
+		///QString str = QString("%1").arg(mom.m00);
 
+        for(unsigned int i = 0; i < contour[0].size(); i=i+10)
+		{
+            QString str =  QString::number(i);
+            putText(image, str.toStdString(), contour[0][i], cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
+		}
+
+		displayType(image);
+			
+
+	}
+
+	void displayType(cv::Mat image)
+	{
+		putText(image, getType().toStdString(), cv::Point(5,5), 
+			cv::FONT_HERSHEY_COMPLEX_SMALL, 5, cv::Scalar(200,200,250));
 	}
 
 
 	QString getData()
 	{
-		std::cout << "SHOULD MATCH HAND: " << palmArea << std::endl;		
 		QString data = QString(
 					"Type: %10"
 					"\nB Width: %1  B Height: %2"
@@ -514,7 +523,6 @@ public:
 			data.append(QString("\nDefect Lengths: %1")
 							.arg(defect[3]/256.0, 4, 'g'));
 		}
-
 
 		return data;
 	}

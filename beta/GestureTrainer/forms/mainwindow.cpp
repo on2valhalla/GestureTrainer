@@ -218,9 +218,11 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 
 		// std::cout << user.curHand.bRatio << std::endl;
 
-		ui->textBrowser->setText(QString("User bratios(F/S): (%1 / %2)")
-										.arg(user.fist.getB())
-                                        .arg(user.spread.getB()));
+//		ui->textBrowser->setText(QString("User bratios(F/S): (%1 / %2)")
+//										.arg(user.fist.getB())
+//                                        .arg(user.spread.getB()));
+
+        ui->textBrowser->setText(user.getData());
         ui->textBrowser->append(user.curHand.getData());
 	}
 
@@ -232,7 +234,7 @@ cv::Mat MainWindow::trainHand( const cv::Mat img )
 {
 	cv::Mat result = img.clone();
     cv::Rect captureRect;
-	if(user.isLeft)
+    if(user.isLeft())
         captureRect = cv::Rect(6*img.cols/10, img.rows/10, 250, 250);
 	else
         captureRect = cv::Rect(img.rows/10, img.cols/10, 250, 250);
