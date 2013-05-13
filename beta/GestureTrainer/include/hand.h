@@ -86,7 +86,8 @@ private:
 	double phRatio;
 
 	cv::Moments mom;
-	cv::Point palmCenter;
+	cv::Point2f palmCenter;
+	// cv::Point palmCenter;
 	float palmRadius;
 	cv::Rect handOnly;
 	// cv::RotatedRect palmEllipse;
@@ -99,7 +100,9 @@ private:
 	static const unsigned int MAX_DEFECTS = 8,
 							MAX_FINGER_SIZE = 3000,
 							MIN_FINGER_SIZE = 700;
-	double MIN_DEFECT_SIZE = 0.0;
+	double MIN_DEFECT_SIZE = 10.0,
+			MIN_FINGER_RATIO = 6.0,
+			MAX_FINGER_RATIO = 30.0;
 
 
 
@@ -253,6 +256,8 @@ public:
 
 	void calcTraits()
 	{
+		if(contour[0].empty())
+			return;
 		// min fit rectangle (rotated)
 		rotRect = cv::minAreaRect( cv::Mat(contour[0]) );
 		rotRect.points(rotPoints);
@@ -279,23 +284,22 @@ public:
 		defects.clear();
 		std::vector<cv::Vec4i> tmpDefects;
 		cv::convexityDefects(contour[0], hullIdxs[0], tmpDefects);
-		// std::vector<cv::Point> palmPoints;
+		std::vector<cv::Point> palmPoints;
 
 		if(tmpDefects.size() <= 0)
 			return;
 		/* Average depth points to get hand center */
-		int x =0, y=0;
+		// int x =0, y=0;
 		for (cv::Vec4i defect : tmpDefects)
 		{
 			if(defect[3]/256.0 < MIN_DEFECT_SIZE)
 				continue;
 
-			x += contour[0][defect[2]].x;
-			y += contour[0][defect[2]].y;
-
+			// x += contour[0][defect[2]].x;
+			// y += contour[0][defect[2]].y;
 
 			defects.push_back(defect);
-			// palmPoints.push_back(contour[0][defect[2]]);
+			palmPoints.push_back(contour[0][defect[2]]);
 		}
 
 
@@ -303,68 +307,50 @@ public:
 		palmCenter = cv::Point(0,0);
 		palmRadius = 0;
 
-		if(defects.size() <= 0)
-			return;
-
-		palmCenter.x = x/defects.size();
-		palmCenter.y = y/defects.size();
-
-		/* Compute hand radius as mean of distances of
-		   defects' depth point to hand center */
-		int dist = 0;
-		for(cv::Vec4i defect : defects)
-		{
-			dist += pointDist(palmCenter, contour[0][defect[2]]);
-		}
-
-		palmRadius = ((double)dist) / defects.size();
-
-		// if(palmPoints.size() <= 0)
+		// if(defects.size() <= 0)
 		// 	return;
 
-		// cv::minEnclosingCircle(palmPoints, palmCenter, palmRadius);
+		// palmCenter.x = x/defects.size();
+		// palmCenter.y = y/defects.size();
+
+		// /* Compute hand radius as mean of distances of
+		//    defects' depth point to hand center */
+		// int dist = 0;
+		// for(cv::Vec4i defect : defects)
+		// {
+		// 	dist += pointDist(palmCenter, contour[0][defect[2]]);
+		// }
+
+		// palmRadius = ((double)dist) / defects.size();
+
+		if(palmPoints.size() <= 0)
+			return;
+
+		cv::minEnclosingCircle(palmPoints, palmCenter, palmRadius);
 		// adjust the palm to be smaller/larger if necessary
 		// palmRadius *= .9;
 		palmArea = PI * (palmRadius * palmRadius);
 	}
 
 
-
-
-
-	cv::Mat findFingers(const cv::Mat binaryImg)
+	cv::Mat extractFingers(cv::Mat handROI)
 	{
-		if(type == NONE || palmRadius == 0 || 
-			boxRect.height <= 0 || !binaryImg.data)
-			return binaryImg;
 
-		// get the points around the palm
-		std::vector<cv::Point> palmPoints;
-        cv::Point2f newCenter;
-		float newRadius;
-		for (cv::Vec4i defect : defects)
-		{
-			palmPoints.push_back(contour[0][defect[2]]);
-		}
-		cv::minEnclosingCircle(palmPoints, newCenter, newRadius);
-		
-		cv::Mat handROI = binaryImg(boxRect).clone();
-
-		cv::Point2f palmCenterROI(newCenter.x - boxRect.tl().x,
-							newCenter.y - boxRect.tl().y);
-
+		cv::Point2f palmCenterROI(palmCenter.x - boxRect.tl().x,
+							palmCenter.y - boxRect.tl().y);
 
 		// fill in palm and below to cut off fingers
-		cv::circle( handROI, palmCenterROI, newRadius, BLACK, CV_FILLED);
+		cv::circle( handROI, palmCenterROI, palmRadius, BLACK, CV_FILLED);
 		// eliminate remnants of wrist
 		cv::rectangle( handROI,
-			cv::Point(palmCenterROI.x - newRadius, palmCenterROI.y),
-			cv::Point(palmCenterROI.x + newRadius, handROI.rows),
+			cv::Point(palmCenterROI.x - palmRadius, palmCenterROI.y),
+			cv::Point(palmCenterROI.x + palmRadius, handROI.rows),
 			BLACK, CV_FILLED);
 		cv::rectangle( handROI,
-			cv::Point(0, palmCenterROI.y + newRadius/2),
+			cv::Point(0, palmCenterROI.y + palmRadius/2),
 			cv::Point(handROI.cols, handROI.rows),
 			BLACK, CV_FILLED);
+
 
 		// Re-find contours (whats left are fingers)
 		cv::Mat cloneROI = handROI.clone();
@@ -372,57 +358,114 @@ public:
 		cv::findContours(cloneROI, tmpContours, CV_RETR_EXTERNAL,
 						CV_CHAIN_APPROX_TC89_L1);
 
-		// Create hand mask drawing
-		cv::Mat handDrawing = cv::Mat::zeros(handROI.size(), CV_8UC3);
-		cv::circle( handDrawing, palmCenterROI, newRadius, HALF_GREY, CV_FILLED);
-
 		fingers.clear();
-		// qDebug() << "------------";
+		// qDebug() << "fingers: ";
 		for(unsigned int i = 0; i < tmpContours.size(); i++)
 		{
 			unsigned int area = cv::contourArea(tmpContours[i]);
-			// qDebug()<< (double)area/newRadius;
+			double Aratio = (double)area/palmRadius;
+			// qDebug() << "\t" << (double)area/palmRadius;
 
-			if(area > MIN_FINGER_SIZE && area < MAX_FINGER_SIZE)
+			// if(area > MIN_FINGER_SIZE && area < MAX_FINGER_SIZE)
+			if(Aratio > MIN_FINGER_RATIO && Aratio < MAX_FINGER_RATIO)
 			{
+				// qDebug()<< (double)area/palmRadius;
 				Finger tmpFing;
 				tmpFing.contour = tmpContours[i];
-
-				tmpFing.tip = newCenter;
-				double maxDist = 0;
-				for (unsigned int j = 0; j < tmpFing.contour.size(); ++j)
-				{
-					// This is to bring the contours back to regular
-					// image size
-//					tmpFing.contour[j] += boxRect.tl();
-                    cv::Point2f tmpPoint = tmpFing.contour[j];
-                    double curDist = pointDist(newCenter, tmpPoint);
-					if(curDist > maxDist)
-					{
-						maxDist = curDist;
-						tmpFing.tip = tmpFing.contour[j];
-					}
-				}
-
-				// if(maxDist < newRadius*1.25)
-					// continue;
-
-				cv::circle( handDrawing, tmpFing.tip, 5, cv::Scalar(100,123,150), CV_FILLED);
-				tmpFing.ellipse = cv::fitEllipse(tmpContours[i]);
-				tmpFing.angle = angleOfPoints(newCenter, tmpFing.tip);
-				cv::ellipse(handDrawing, tmpFing.ellipse, HALF_BLUE, CV_FILLED);
 				fingers.push_back(tmpFing);
 			}
 		}
-		
-		for(unsigned int i = 0; i<fingers.size();i++)
+
+		return handROI;
+	}
+
+	void fingerTraits()
+	{
+		cv::Point2f tmpPoint;
+		for (unsigned int i = 0; i < fingers.size(); i++)
 		{
-			QString str =  QString::number(fingers[i].angle);
-			putText(handDrawing, str.toStdString(), fingers[i].tip,
-					cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(255,255,250));
+			double maxDist = 0;
+			for (unsigned int j = 0; j < fingers[i].contour.size(); ++j)
+			{
+				tmpPoint = fingers[i].contour[j] + boxRect.tl();
+				double curDist = pointDist(palmCenter, tmpPoint);
+
+				if(curDist > maxDist)
+				{
+					maxDist = curDist;
+					fingers[i].tip = fingers[i].contour[j];
+				}
+			}
+
+			fingers[i].ellipse = cv::fitEllipse(fingers[i].contour);
+			tmpPoint = fingers[i].tip + boxRect.tl();
+			fingers[i].angle = angleOfPoints(palmCenter, tmpPoint);
+		}
+	}
+
+
+	cv::Mat findFingers()
+	{
+		// Create a blank image to draw in
+		cv::Mat binaryImg = 
+				cv::Mat::zeros(boxRect.br().y, boxRect.br().x, CV_8UC1);
+		if(type == NONE || palmRadius == 0 || 
+			boxRect.height <= 0)
+			return binaryImg;
+
+		// draw the contour
+		cv::drawContours(binaryImg, contour, 0, WHITE, CV_FILLED);
+
+		// get the points around the palm
+		std::vector<cv::Point> palmPoints;
+		cv::Point2f newCenter;
+		float newRadius;
+		for (cv::Vec4i defect : defects)
+		{
+			palmPoints.push_back(contour[0][defect[2]]);
+		}
+		cv::minEnclosingCircle(palmPoints, newCenter, newRadius);
+		
+		cv::Mat handROI = binaryImg(boxRect);
+
+		extractFingers(handROI);
+
+		// if fewer than 4 fingers are detected, run again with a larger
+		// radius and check result
+		if(fingers.size() < 4)
+		{
+			// qDebug() << "Give it another shot";
+			// backup
+			std::vector<Finger> oldfing = fingers;
+			cv::vector<cv::Vec4i> olddef = defects;
+
+
+			// adjust vars
+			palmRadius *= 1.1;
+
+
+			// convex hull and defects
+			std::vector<std::vector<int> > hullIdxs;
+			hullIdxs.push_back(std::vector<int>());
+			cv::convexHull( contour[0], hullIdxs[0]);
+
+			defects.clear();
+			cv::convexityDefects(contour[0], hullIdxs[0], defects);
+			extractFingers(handROI);
+			if(fingers.size() <= oldfing.size() && fingers.size() > 0)
+			{
+				fingers = oldfing;
+			}
+
+			// restore defects and radius
+			defects = olddef;
+			palmRadius /= 1.1;
 		}
 
-		return handDrawing;
+		// get traits for fingers after finalized
+		fingerTraits();
+
+		return handROI;
 	}
 
 	/*
@@ -449,6 +492,33 @@ public:
 
 		return true;
 	}
+
+	
+
+	void findClass()
+	{
+		// double handMass = mom.m00;
+
+		// phRatio = palmArea/handMass;
+		// if(phRatio > 0.70)
+		// 	type = FIST;
+		// else
+		// 	type = PALM;
+
+		if(fingers.size() >= 1)
+		{
+			type = PALM;
+			MIN_DEFECT_SIZE = 10.0;
+		}
+		else
+		{
+			MIN_DEFECT_SIZE = 0.0;
+			calcTraits();
+			type = FIST;
+		}
+		// qDebug() << getType();
+	}
+
 
 //	END Calculation
 //##############################################################################
@@ -491,27 +561,6 @@ public:
 		float yDiff = p2.y - p1.y;
 		return atan2(yDiff, xDiff);
 	}
-
-	void findClass()
-	{
-		double handMass = mom.m00;
-
-<<<<<<< HEAD
-		phRatio = palmArea/handMass;
-		if(phRatio > 0.70)
-			type = FIST;
-		else
-			type = PALM;
-=======
-        phRatio = palmArea/handMass;
-        //if(phRatio < 0.65)
-	if(phRatio > 0.70)
-        	type = FIST;
-        else
-        	type = PALM;
->>>>>>> cb53f7fed827df108bf627f3f5c4b41da3928f9b
-	}
-
 	// Draws all the relevant hand data (bounding and rotated rects, contour)
 	// on a cv::Mat that is provided
 	void drawHand(cv::Mat image)
@@ -534,8 +583,8 @@ public:
 		for(cv::Vec4i defect : defects)
 		{
 			// Skip the smaller defects
-			if(defect[3]/256.0 < MIN_DEFECT_SIZE)
-				continue;
+			// if(defect[3]/256.0 < MIN_DEFECT_SIZE)
+			// 	continue;
 			// draw defect begin, end, and farthest point
 			// cv::circle( image, contour[0][defect[0]], 5, HALF_BLUE, -1 );
 			// cv::circle( image, contour[0][defect[1]], 5, HALF_GREEN, -1 );

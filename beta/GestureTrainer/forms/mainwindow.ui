@@ -75,11 +75,7 @@
      <enum>QTabWidget::Triangular</enum>
     </property>
     <property name="currentIndex">
-<<<<<<< HEAD
      <number>4</number>
-=======
-     <number>3</number>
->>>>>>> cb53f7fed827df108bf627f3f5c4b41da3928f9b
     </property>
     <widget class="QWidget" name="tabStart">
      <attribute name="title">

@@ -197,8 +197,7 @@ cv::Mat MainWindow::processHand( const cv::Mat color, const cv::Mat binary )
 	// display hand ROI in small window
 	user.setCurHand(HandDetectController::getInstance()->getLastHand());
 	cv::namedWindow("fingerIMG");
-	cv::Mat handDrawing = user.curHand.findFingers(
-		HandDetectController::getInstance()->getBlobImage());
+	cv::Mat handDrawing = user.curHand.findFingers();
 	cv::imshow("fingerIMG", handDrawing);
 	return HandDetectController::getInstance()->getLastResult();
 }
