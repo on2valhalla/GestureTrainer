@@ -97,9 +97,6 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat binImg)
 	lastHand = Hand(maxContour);
 	// lastHand.eliminateWrist(binImg);
 
-	cv::namedWindow("fingers");
-	cv::Mat fingers = lastHand.findFingers(binImg);
-	cv::imshow("fingers", fingers);
 
 	lastHand.drawHand(resultImg);
 	//------------------END Find Hand--------------------
