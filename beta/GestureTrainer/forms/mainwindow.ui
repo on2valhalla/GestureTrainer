@@ -75,7 +75,11 @@
      <enum>QTabWidget::Triangular</enum>
     </property>
     <property name="currentIndex">
+<<<<<<< HEAD
      <number>4</number>
+=======
+     <number>3</number>
+>>>>>>> cb53f7fed827df108bf627f3f5c4b41da3928f9b
     </property>
     <widget class="QWidget" name="tabStart">
      <attribute name="title">
@@ -706,10 +710,70 @@
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab">
+    <widget class="QWidget" name="tabTrain">
      <attribute name="title">
       <string>Page</string>
      </attribute>
+     <widget class="QLabel" name="label_UserHand">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>170</y>
+        <width>250</width>
+        <height>250</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <property name="lineWidth">
+       <number>2</number>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_Goal">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>170</y>
+        <width>250</width>
+        <height>250</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <property name="lineWidth">
+       <number>2</number>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap resource="../res.qrc">:/img/fist.jpg</pixmap>
+      </property>
+      <property name="scaledContents">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QTextBrowser" name="feedbackBrowser">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>491</width>
+        <height>151</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QCheckBox" name="checkBox">

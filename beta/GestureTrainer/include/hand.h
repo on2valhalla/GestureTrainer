@@ -496,11 +496,20 @@ public:
 	{
 		double handMass = mom.m00;
 
+<<<<<<< HEAD
 		phRatio = palmArea/handMass;
 		if(phRatio > 0.70)
 			type = FIST;
 		else
 			type = PALM;
+=======
+        phRatio = palmArea/handMass;
+        //if(phRatio < 0.65)
+	if(phRatio > 0.70)
+        	type = FIST;
+        else
+        	type = PALM;
+>>>>>>> cb53f7fed827df108bf627f3f5c4b41da3928f9b
 	}
 
 	// Draws all the relevant hand data (bounding and rotated rects, contour)

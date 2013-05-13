@@ -35,6 +35,8 @@ public:
 
 	Hand curHand;
 	std::deque<double> palmRadii;
+	std::deque<cv::Point2f> palmCenters;
+
 
 	double c2eSLOPE;
 	double c2bSLOPE;
@@ -172,6 +174,16 @@ public:
 
     }
 
+    bool contComparing(std::string goal)
+    {
+    	std::string type = curHand.getType().toStdString();
+    	
+    	if(type.compare(goal) != 0)
+    		return false;
+    	else
+    		return true;
+    }
+
 	void cleanDefects(Hand& hand)
 	{
 		cv::vector<cv::Vec4i> defects = hand.defects;
@@ -211,10 +223,31 @@ public:
 			localRadius += palmRadii[i] * (i+1);
 
 		localRadius = localRadius / 6;
+
+		curHand.palmRadius = localRadius;
 		curHand.palmArea = PI * (localRadius * localRadius);
 
 		curHand.findClass();
 	}
+
+	void centerSmoothing()
+	{
+		palmCenters.push_back(curHand.palmCenter);
+
+
+        if(palmCenters.size() > 3)
+			palmCenters.pop_front();
+
+        cv::Point2f localCenter;
+		for(int i = 0; i < 3; i++)
+            localCenter += palmCenters[i] * (i+1);
+
+        //!!!!!!!!!!//
+		//localCenter = localCenter / 6;
+
+		curHand.palmCenter = localCenter;
+	}
+	
 
 	QString getOrient()
 	{

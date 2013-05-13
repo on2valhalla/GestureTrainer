@@ -127,6 +127,7 @@ private slots:
 	void toggleCamera();
 	void keyPressEvent(QKeyEvent *e);
     void on_comboBox_currentIndexChanged(int index);
+    //void trainUser();
 
 	//Background Slots
 	void processColorDetection();
