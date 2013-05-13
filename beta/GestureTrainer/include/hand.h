@@ -173,8 +173,6 @@ public:
 			mom = rhs.mom;
 			palmCenter = rhs.palmCenter;
 			palmRadius = rhs.palmRadius;
-			fingerContours = rhs.fingerContours;
-			fingerShapes = rhs.fingerShapes;
 			handOnly = rhs.handOnly;
 			// palmEllipse = rhs.palmEllipse;
 			palmArea = rhs.palmArea;

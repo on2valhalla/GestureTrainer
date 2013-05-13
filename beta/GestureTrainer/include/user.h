@@ -153,7 +153,7 @@ public:
 
     void palmClass()
     {
-        int count = curHand.numFingers;
+        int count = curHand.fingers.size();
 
     	if(count == 1)
     	{
