@@ -84,7 +84,7 @@ private:
 	double phRatio;
 
 	cv::Moments mom;
-	cv::Point2f palmCenter;
+	cv::Point palmCenter;
 	float palmRadius;
 	cv::Rect handOnly;
     // cv::RotatedRect palmEllipse;
@@ -289,27 +289,49 @@ public:
 		if(tmpDefects.size() <= 0)
 			return;
 		/* Average depth points to get hand center */
+		int x =0, y=0;
 		for (cv::Vec4i defect : tmpDefects)
 		{
 			if(defect[3]/256.0 < MIN_DEFECT_SIZE)
 				continue;
+
+			x += contour[0][defect[2]].x;
+			y += contour[0][defect[2]].y;
+
+
 			defects.push_back(defect);
 			palmPoints.push_back(contour[0][defect[2]]);
 		}
 
 
 		// Calculate palm center and enclosing circle
-		palmCenter = cv::Point2f(0,0);
+        palmCenter = cv::Point(0,0);
 		palmRadius = 0;
 
-		if(palmPoints.size() <= 0)
-			return;
+		palmCenter.x = x/defects.size();
+		palmCenter.y = y/defects.size();
+		/* Compute hand radius as mean of distances of
+		   defects' depth point to hand center */
+		int dist = 0;
+		for(cv::Vec4i defect : defects)
+		{
+			dist += pointDist(palmCenter, contour[0][defect[2]]);
+		}
 
-        cv::minEnclosingCircle(palmPoints, palmCenter, palmRadius);
+		palmRadius = ((double)dist) / defects.size();
+
+		// if(palmPoints.size() <= 0)
+		// 	return;
+
+        // cv::minEnclosingCircle(palmPoints, palmCenter, palmRadius);
 		// adjust the palm to be smaller/larger if necessary
 		// palmRadius *= .9;
         palmArea = PI * (palmRadius * palmRadius);
 	}
+
+
+
+
 
 	cv::Mat findFingers(const cv::Mat binaryImg)
 	{
