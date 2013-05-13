@@ -98,7 +98,7 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat binImg)
 	// lastHand.eliminateWrist(binImg);
 
 
-	lastHand.drawHand(resultImg);
+	// lastHand.draw(resultImg);
 	//------------------END Find Hand--------------------
 
 

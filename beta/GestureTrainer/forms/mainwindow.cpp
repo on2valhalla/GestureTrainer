@@ -199,7 +199,8 @@ cv::Mat MainWindow::processHand( const cv::Mat color, const cv::Mat binary )
 	cv::namedWindow("fingerIMG");
 	cv::Mat handDrawing = user.curHand.findFingers();
 	cv::imshow("fingerIMG", handDrawing);
-	return HandDetectController::getInstance()->getLastResult();
+	return user.curHand.draw(
+				HandDetectController::getInstance()->getLastResult());
 }
 
 /*
