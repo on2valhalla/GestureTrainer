@@ -105,7 +105,7 @@ public:
 		double rise = (a.y-b.y);
 		double run = (a.x-b.x);
 		double slope = rise/run;
-		std::cout << slope << std::endl;
+		// std::cout << slope << std::endl;
 		return slope;
 	}
 

@@ -308,8 +308,12 @@ public:
         palmCenter = cv::Point(0,0);
 		palmRadius = 0;
 
+		if(defects.size() <= 0)
+			return;
+		
 		palmCenter.x = x/defects.size();
 		palmCenter.y = y/defects.size();
+
 		/* Compute hand radius as mean of distances of
 		   defects' depth point to hand center */
 		int dist = 0;
@@ -369,7 +373,7 @@ public:
 
 		fingerContours.clear();
 		fingerShapes.clear();
-		qDebug() << "------------";
+		// qDebug() << "------------";
 		for(unsigned int i = 0; i < tmpContours.size(); i++)
 		{
             unsigned int area = cv::contourArea(tmpContours[i]);
