@@ -431,7 +431,7 @@ public:
 	cv::Mat findFingers()
 	{
 		if(type == NONE || palmRadius == 0 || 
-			boxRect.height <= 0)
+			boxRect.height <= 0 || boxRect.height > 640)
 			return cv::Mat::zeros(10,10,CV_8UC1);
 
 		// Create a blank image to draw in
