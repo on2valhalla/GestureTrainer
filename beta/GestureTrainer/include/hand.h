@@ -11,7 +11,6 @@
 #ifndef HAND_H
 #define HAND_H
 
-#define PI 3.1415926
 
 #include <QDebug>
 #include <QString>
@@ -86,9 +85,7 @@ private:
 	cv::Point2f palmCenter;
 	float palmRadius;
 	cv::Rect handOnly;
-	// cv::RotatedRect palmEllipse;
-	cv::Point palmCenter;
-	int palmRadius;
+    // cv::RotatedRect palmEllipse;
 	double palmArea;
   
 
@@ -302,9 +299,10 @@ public:
 		if(palmPoints.size() <= 0)
 			return;
 
-		cv::minEnclosingCircle(palmPoints, palmCenter, palmRadius);
+        cv::minEnclosingCircle(palmPoints, palmCenter, palmRadius);
 		// adjust the palm to be smaller/larger if necessary
 		// palmRadius *= .9;
+        palmArea = PI * (palmRadius * palmRadius);
 	}
 
 	cv::Mat findFingers(const cv::Mat binaryImg)
@@ -356,18 +354,9 @@ public:
 				fingerShapes.push_back(tmpEllipse);
 				cv::ellipse(handDrawing, tmpEllipse, HALF_BLUE, CV_FILLED);
 			}
-		}
+        }
 
-		palmRadius = ((double)dist) / defects.size();
-		palmArea = PI * (palmRadius * palmRadius);
-
-		bRatio = static_cast<double>(boxRect.width)/boxRect.height;
-		mRatio = (static_cast<double>(boxRect.width)*boxRect.height)/mom.m00;
-
-		std::cout << "In Hand: " << palmArea << std::endl;
-
-		qDebug() << "radius: " << palmRadius;
-
+        return handDrawing;
 	}
 
 	/*

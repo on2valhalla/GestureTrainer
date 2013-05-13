@@ -21,14 +21,9 @@ class User
 
 public:
 	Hand fist;
-	Hand spread;
-<<<<<<< HEAD
+    Hand spread;
 	Hand curHand;
-	bool isLeft;
-=======
->>>>>>> master
-
-	Hand curHand;
+    bool isLeft;
 	std::deque<double> palmRadii;
 
 	//Constructor
@@ -102,16 +97,13 @@ public:
 
 		curHand.findType();
 
-	}
-<<<<<<< HEAD
+    }
+
 
 	void setLeft(bool left)
 	{
 		isLeft = left;
-	}
-=======
-	
->>>>>>> master
+    }
 };
 
 #endif
