@@ -10,7 +10,10 @@
 #ifndef USER_H
 #define USER_H
 
+#define PI 3.1415926
+
 #include <string>
+#include <deque>
 #include "../include/hand.h"
 
 class User
@@ -19,19 +22,22 @@ class User
 public:
 	Hand fist;
 	Hand spread;
+<<<<<<< HEAD
 	Hand curHand;
 	bool isLeft;
+=======
+>>>>>>> master
 
-	double pinky;
-	double ring;
-	double pointer;
-	double middle;
-	double thumb;
+	Hand curHand;
+	std::deque<double> palmRadii;
 
 	//Constructor
     User()
 	{
-
+		for(int i = 0; i < 3; i++)
+		{
+			palmRadii[i] = 0;
+		}
 	}
 
 	//copy constructor
@@ -40,6 +46,8 @@ public:
 		fist = h.fist;
 		spread = h.spread;
 		curHand = h.curHand;
+
+		palmRadii = h.palmRadii;
 	}
 
 	//assignment operator
@@ -48,6 +56,8 @@ public:
 		fist = rhs.fist;
 		spread = rhs.spread;
 		curHand = rhs.curHand;
+
+		palmRadii = rhs.palmRadii;
 
         return *this;
 	}
@@ -58,6 +68,12 @@ public:
 		
 	}
 
+    void setCurHand(const Hand& hand)
+	{
+		curHand = hand;
+		radiusSmoothing();
+	}
+
 	// Easy Calculation of Euclidean Distance
 	double pointDist(cv::Point &p1, cv::Point &p2)
 	{
@@ -66,46 +82,36 @@ public:
 		return sqrt(dx * dx + dy * dy);
 	}
 
-	void curType()
+	void radiusSmoothing()
 	{
+		palmRadii.push_back(curHand.palmRadius);
 
-	}
 
-	void getFingers()
-	{
-		cv::vector<cv::Vec4i> defects = spread.defects;
-		std::vector<std::vector< cv::Point > > contour = spread.contour;
-		std::string orientation;
+        if(palmRadii.size() > 3)
+			palmRadii.pop_front();
 
-		cv::Vec4i minDefect = defects[0];
-
-		while(defects.size() > 4)
+		double localRadius = 0;
+		for(int i = 0; i < 3; i++)
 		{
-			for(cv::Vec4i defect : defects)
-			{
-				if(defect[3]/256.0 < minDefect[3]/256.0)
-					minDefect = defect;
-			}
+			localRadius += palmRadii[i] * (i+1);
 
-			defects.erase(std::remove(defects.begin(), defects.end(), minDefect), defects.end());
 		}
 
-		cv::Vec4i rightMost = defects[0];
-		cv::Vec4i leftMost = defects[3];
+		localRadius = localRadius / 6;
+		curHand.palmArea = PI * (localRadius * localRadius);
 
-		if(pointDist(contour[0][rightMost[0]], contour[0][rightMost[1]]) > 
-				pointDist(contour[0][leftMost[0]], contour[0][leftMost[1]]))
-					orientation = "left";
-		else orientation = "right";
-
-
+		curHand.findType();
 
 	}
+<<<<<<< HEAD
 
 	void setLeft(bool left)
 	{
 		isLeft = left;
 	}
+=======
+	
+>>>>>>> master
 };
 
 #endif

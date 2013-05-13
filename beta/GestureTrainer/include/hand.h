@@ -11,12 +11,15 @@
 #ifndef HAND_H
 #define HAND_H
 
+#define PI 3.1415926
+
 #include <QDebug>
 #include <QString>
 
 #include <opencv2/core/core.hpp>
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <algorithm>
 
@@ -77,11 +80,17 @@ private:
 	cv::Rect boxRect;
 	double bRatio;
 	double mRatio;
+	double phRatio;
+
 	cv::Moments mom;
 	cv::Point2f palmCenter;
 	float palmRadius;
 	cv::Rect handOnly;
 	// cv::RotatedRect palmEllipse;
+	cv::Point palmCenter;
+	int palmRadius;
+	double palmArea;
+  
 
 	int numFingers;
 	std::vector<Finger> fingers;
@@ -146,6 +155,9 @@ public:
 		fingerShapes = h.fingerShapes;
 		handOnly = h.handOnly;
 		// palmEllipse = h.palmEllipse;
+		palmArea = h.palmArea;
+		phRatio = h.phRatio;
+
 	}
 
 	//assignment operator
@@ -170,6 +182,8 @@ public:
 			fingerShapes = rhs.fingerShapes;
 			handOnly = rhs.handOnly;
 			// palmEllipse = rhs.palmEllipse;
+			palmArea = rhs.palmArea;
+			phRatio = rhs.phRatio;
 		}
 		return *this;
 	}
@@ -344,15 +358,15 @@ public:
 			}
 		}
 
-		QString str = QString("%1")
-							.arg(fingerContours.size());
-		putText(handROI, str.toStdString(), cv::Point(20,20),
-			cv::FONT_HERSHEY_COMPLEX_SMALL, 1, GREY);
+		palmRadius = ((double)dist) / defects.size();
+		palmArea = PI * (palmRadius * palmRadius);
 
-		numFingers = fingerContours.size();
+		bRatio = static_cast<double>(boxRect.width)/boxRect.height;
+		mRatio = (static_cast<double>(boxRect.width)*boxRect.height)/mom.m00;
 
+		std::cout << "In Hand: " << palmArea << std::endl;
 
-		return handROI;
+		qDebug() << "radius: " << palmRadius;
 
 	}
 
@@ -397,6 +411,7 @@ public:
 		double dy = p1.y - p2.y;
 		return sqrt(dx * dx + dy * dy);
 	}
+
 	double pointDist(cv::Point2f &p1, cv::Point2f &p2)
 	{
 		double dx = p1.x - p2.x;
@@ -411,11 +426,21 @@ public:
 
 	void findType()
 	{
-		bRatio = static_cast<double>(boxRect.width)/boxRect.height;
-		// std::cout << bRatio << std::endl;
-		mRatio = (static_cast<double>(boxRect.width)*boxRect.height)/mom.m00;
+        double handMass = mom.m00;
+
+        phRatio = palmArea/handMass;
+        if(phRatio > 0.7)
+        {
+        	type = FIST;
+        }
+        else
+        {
+        	type = PALM;
+        }
 
 	}
+
+	
 
 	// Draws all the relevant hand data (bounding and rotated rects, contour)
 	// on a cv::Mat that is provided
@@ -471,15 +496,18 @@ public:
 
 	}
 
+
 	QString getData()
 	{
+		std::cout << "SHOULD MATCH HAND: " << palmArea << std::endl;		
 		QString data = QString(
-					"Type: %9"
-					"\nFingers: %10"
+					"Type: %10"
 					"\nB Width: %1  B Height: %2"
 					"\nR Width: %3  R Height: %4"
 					"\nB Ratio: %5  M Ratio : %6"
-					"\nDefects: %7  Palm Rad: %8\n")
+					"\nDefects: %7  \n"
+					"Hand Mass: %8   \nPalm Area: %9\n"
+					"PHratio: %11\n")
 					.arg(boxRect.width)
 					.arg(boxRect.height)
 					.arg(pointDist(rotPoints[1], rotPoints[0]), 3, 'g')
@@ -487,15 +515,18 @@ public:
 					.arg(bRatio, 3, 'g')
 					.arg(mRatio, 3, 'g')
 					.arg(defects.size())
-					.arg(palmRadius)
+					.arg(mom.m00)
+					.arg(palmArea)
 					.arg(getType())
-					.arg(numFingers);
+					.arg(phRatio);
 
 		for(cv::Vec4i defect : defects)
 		{
-			data.append(QString("\nDefect len: %1")
+			data.append(QString("\nDefect Lengths: %1")
 							.arg(defect[3]/256.0, 4, 'g'));
 		}
+
+
 		return data;
 	}
 
