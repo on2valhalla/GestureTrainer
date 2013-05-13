@@ -21,6 +21,7 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include <cmath>
 
 #include "../include/user.h"
 
@@ -41,14 +42,15 @@ enum FingerType {
 	MIDDLE,
 	RING,
 	PINKY,
-    FINUNK
+	FINUNK
 };
 
 struct Finger {
-    FingerType type = FINUNK;
+	FingerType type = FINUNK;
 	cv::RotatedRect ellipse;
 	std::vector<cv::Point> contour;
 	cv::Point tip;
+	double angle;
 };
 
 
@@ -87,18 +89,15 @@ private:
 	cv::Point palmCenter;
 	float palmRadius;
 	cv::Rect handOnly;
-    // cv::RotatedRect palmEllipse;
+	// cv::RotatedRect palmEllipse;
 	double palmArea;
   
 
-	int numFingers;
 	std::vector<Finger> fingers;
-	std::vector<std::vector<cv::Point > > fingerContours;
-	std::vector<cv::RotatedRect> fingerShapes;
 
 
 	static const unsigned int MAX_DEFECTS = 8,
-                            MAX_FINGER_SIZE = 3000,
+							MAX_FINGER_SIZE = 3000,
 							MIN_FINGER_SIZE = 700;
 	const double MIN_DEFECT_SIZE = 0.0;
 
@@ -130,7 +129,7 @@ public:
 			contour.push_back(c);
 
 			calcTraits();
-            findClass();
+			findClass();
 		}
 	}
 
@@ -149,13 +148,11 @@ public:
 		mom = h.mom;
 		palmCenter = h.palmCenter;
 		palmRadius = h.palmRadius;
-		numFingers = h.numFingers;
-		fingerContours = h.fingerContours;
-		fingerShapes = h.fingerShapes;
 		handOnly = h.handOnly;
 		// palmEllipse = h.palmEllipse;
 		palmArea = h.palmArea;
 		phRatio = h.phRatio;
+		fingers = h.fingers;
 
 	}
 
@@ -176,13 +173,13 @@ public:
 			mom = rhs.mom;
 			palmCenter = rhs.palmCenter;
 			palmRadius = rhs.palmRadius;
-			numFingers = rhs.numFingers;
 			fingerContours = rhs.fingerContours;
 			fingerShapes = rhs.fingerShapes;
 			handOnly = rhs.handOnly;
 			// palmEllipse = rhs.palmEllipse;
 			palmArea = rhs.palmArea;
 			phRatio = rhs.phRatio;
+			fingers = rhs.fingers;
 		}
 		return *this;
 	}
@@ -305,7 +302,7 @@ public:
 
 
 		// Calculate palm center and enclosing circle
-        palmCenter = cv::Point(0,0);
+		palmCenter = cv::Point(0,0);
 		palmRadius = 0;
 
 		if(defects.size() <= 0)
@@ -327,10 +324,10 @@ public:
 		// if(palmPoints.size() <= 0)
 		// 	return;
 
-        // cv::minEnclosingCircle(palmPoints, palmCenter, palmRadius);
+		// cv::minEnclosingCircle(palmPoints, palmCenter, palmRadius);
 		// adjust the palm to be smaller/larger if necessary
 		// palmRadius *= .9;
-        palmArea = PI * (palmRadius * palmRadius);
+		palmArea = PI * (palmRadius * palmRadius);
 	}
 
 
@@ -371,24 +368,49 @@ public:
 		cv::Mat handDrawing = cv::Mat::zeros(handROI.size(), CV_8UC3);
 		cv::circle( handDrawing, palmCenterROI, palmRadius, HALF_GREY, CV_FILLED);
 
-		fingerContours.clear();
-		fingerShapes.clear();
+		fingers.clear();
 		// qDebug() << "------------";
 		for(unsigned int i = 0; i < tmpContours.size(); i++)
 		{
-            unsigned int area = cv::contourArea(tmpContours[i]);
+			unsigned int area = cv::contourArea(tmpContours[i]);
 			// qDebug()<< (double)area/palmRadius;
 
 			if(area > MIN_FINGER_SIZE && area < MAX_FINGER_SIZE)
 			{
-				fingerContours.push_back(tmpContours[i]);
-				cv::RotatedRect tmpEllipse = cv::fitEllipse(tmpContours[i]);
-				fingerShapes.push_back(tmpEllipse);
-				cv::ellipse(handDrawing, tmpEllipse, HALF_BLUE, CV_FILLED);
-			}
-        }
+				Finger tmpFing;
+				tmpFing.contour = tmpContours[i];
 
-        return handDrawing;
+				tmpFing.tip = palmCenter;
+				double maxDist = 0;
+				for (unsigned int j = 0; j < tmpFing.contour.size(); ++j)
+				{
+					// This is to bring the contours back to regular
+					// image size
+//					tmpFing.contour[j] += boxRect.tl();
+					double curDist = pointDist(palmCenter, tmpFing.contour[j]);
+					if(curDist > maxDist)
+					{
+						maxDist = curDist;
+						tmpFing.tip = tmpFing.contour[j];
+					}
+				}
+
+				cv::circle( handDrawing, tmpFing.tip, 5, cv::Scalar(100,123,150), CV_FILLED);
+				tmpFing.ellipse = cv::fitEllipse(tmpContours[i]);
+				tmpFing.angle = angleOfPoints(palmCenter, tmpFing.tip);
+				cv::ellipse(handDrawing, tmpFing.ellipse, HALF_BLUE, CV_FILLED);
+				fingers.push_back(tmpFing);
+			}
+		}
+		
+		for(unsigned int i = 0; i<fingers.size();i++)
+		{
+			QString str =  QString::number(fingers[i].angle);
+			putText(handDrawing, str.toStdString(), fingers[i].tip,
+					cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(255,255,250));
+		}
+
+		return handDrawing;
 	}
 
 	/*
@@ -443,15 +465,30 @@ public:
 		return cv::Point( (p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
 	}
 
+	/**
+	 * Determines the angle of a straight line drawn between point one and two. 
+	 The number returned, which is a float in degrees, tells us how much we 
+	 have to rotate a horizontal line clockwise for it to match the line 
+	 between the two points.If you prefer to deal with angles using radians 
+	 instead of degrees, just change the last line to: 
+	 "return Math.Atan2(yDiff, xDiff);"
+	 */
+	float angleOfPoints(cv::Point p1, cv::Point p2)
+	{
+		float xDiff = p2.x - p1.x;
+		float yDiff = p2.y - p1.y;
+		return atan2(yDiff, xDiff);
+	}
+
 	void findClass()
 	{
-        double handMass = mom.m00;
+		double handMass = mom.m00;
 
-        phRatio = palmArea/handMass;
-        if(phRatio > 0.70)
-        	type = FIST;
-        else
-        	type = PALM;
+		phRatio = palmArea/handMass;
+		if(phRatio > 0.70)
+			type = FIST;
+		else
+			type = PALM;
 	}
 
 	// Draws all the relevant hand data (bounding and rotated rects, contour)
@@ -492,7 +529,7 @@ public:
 			// 		HALF_BLUE, 3, CV_AA );
 		}
 
-        if(palmCenter.x && palmCenter.y && palmRadius)
+		if(palmCenter.x && palmCenter.y && palmRadius)
 			cv::circle( image, palmCenter, palmRadius, HALF_BLUE, 3 );
 
 		// // draw bounding rotated rectangles
@@ -504,10 +541,11 @@ public:
 
 		///QString str = QString("%1").arg(mom.m00);
 
-        for(unsigned int i = 0; i < contour[0].size(); i=i+10)
+		for(unsigned int i = 0; i < contour[0].size(); i=i+10)
 		{
-            QString str =  QString::number(i);
-            putText(image, str.toStdString(), contour[0][i], cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
+			QString str =  QString::number(i);
+			putText(image, str.toStdString(), contour[0][i],
+					cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
 		}
 
 		displayType(image);
@@ -526,6 +564,7 @@ public:
 	{
 		QString data = QString(
 					"Type: %10"
+					"\nNumFingers: %12"
 					"\nB Width: %1  B Height: %2"
 					"\nR Width: %3  R Height: %4"
 					"\nB Ratio: %5  M Ratio : %6"
@@ -542,7 +581,8 @@ public:
 					.arg(mom.m00)
 					.arg(palmArea)
 					.arg(getType())
-					.arg(phRatio);
+					.arg(phRatio)
+					.arg(fingers.size());
 
 		for(cv::Vec4i defect : defects)
 		{
