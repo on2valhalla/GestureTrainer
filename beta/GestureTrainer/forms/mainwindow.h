@@ -145,6 +145,7 @@ private slots:
 	void on_check_Blur_stateChanged(int state);
     void on_pushButton_Detect_clicked();
     void on_pushButton_Save_clicked();
+    void on_checkBox_stateChanged(int state);
 };
 
 #endif // MAINWINDOW_H

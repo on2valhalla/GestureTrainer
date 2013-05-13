@@ -76,6 +76,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	//default settings
 	backProcess = histEnable = handDetect = measureHand = false;
+	user.setLeft(false);
 	cHist = ColorHistogram();
 
 	//Environments
@@ -230,7 +231,11 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 cv::Mat MainWindow::trainHand( const cv::Mat img )
 {
 	cv::Mat result = img.clone();
-	cv::Rect captureRect(img.rows/10, img.cols/10, 250, 250);
+    cv::Rect captureRect;
+	if(user.isLeft)
+        captureRect = cv::Rect(6*img.cols/10, img.rows/10, 250, 250);
+	else
+        captureRect = cv::Rect(img.rows/10, img.cols/10, 250, 250);
 
 	rectangle(result, captureRect, COLOR_CAP_RECT, 3);
 
@@ -664,6 +669,20 @@ void MainWindow::on_check_Blur_stateChanged(int state)
 }
 
 
+void MainWindow::on_checkBox_stateChanged(int state)
+{
+    if(state == Qt::Checked)
+    {
+        user.setLeft(true);
+    }
+    else
+    {
+        user.setLeft(false);
+    }
+}
+
+
+
 
 //---------Hand Buttons--------------
 
@@ -698,5 +717,3 @@ void MainWindow::on_comboBox_currentIndexChanged(int index)
 
 // END Slots
 //##############################################################################
-
-

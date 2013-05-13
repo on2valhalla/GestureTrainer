@@ -20,6 +20,7 @@ public:
 	Hand fist;
 	Hand spread;
 	Hand curHand;
+	bool isLeft;
 
 	double pinky;
 	double ring;
@@ -99,6 +100,11 @@ public:
 
 
 
+	}
+
+	void setLeft(bool left)
+	{
+		isLeft = left;
 	}
 };
 
