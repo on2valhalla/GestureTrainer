@@ -100,7 +100,7 @@ private:
 	static const unsigned int MAX_DEFECTS = 8,
                             MAX_FINGER_SIZE = 3000,
 							MIN_FINGER_SIZE = 700;
-	const double MIN_DEFECT_SIZE = 10.0;
+	const double MIN_DEFECT_SIZE = 0.0;
 
 
 
@@ -310,7 +310,7 @@ public:
 
 		if(defects.size() <= 0)
 			return;
-		
+
 		palmCenter.x = x/defects.size();
 		palmCenter.y = y/defects.size();
 
