@@ -423,11 +423,10 @@ public:
 					fingers[i].tip = fingers[i].contour[j];
 				}
 			}
-			tmpPoint = fingers[i].tip + boxRect.tl();
-			fingers[i].angle = angleOfPoints(palmCenter, tmpPoint);
 
 			if(fingers[i].contour.size() <= 5)
 				continue;
+
 			fingers[i].ellipse = cv::fitEllipse(fingers[i].contour);
 			tmpPoint = fingers[i].tip + boxRect.tl();
 			fingers[i].angle = std::abs(angleOfPoints(palmCenter, tmpPoint));
