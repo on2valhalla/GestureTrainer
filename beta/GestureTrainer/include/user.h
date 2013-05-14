@@ -252,11 +252,11 @@ public:
 
 
 			double subVind2mid = std::abs(subAngle - ind2mid);
-			qDebug() << "subVind2mid: " << subVind2mid; 
+			// qDebug() << "subVind2mid: " << subVind2mid; 
 			double subVthumb2pink = std::abs(subAngle - thumb2pink);
-			qDebug() << "subVthumb2pink: " << subVthumb2pink;
+			// qDebug() << "subVthumb2pink: " << subVthumb2pink;
 			double subVthumb2ind = std::abs(subAngle - thumb2ind);
-			qDebug() << "subVthumb2ind: " << subVthumb2ind;
+			// qDebug() << "subVthumb2ind: " << subVthumb2ind;
 			
 
 			if(subVind2mid < subVthumb2pink)

@@ -390,7 +390,7 @@ public:
 
 		fingers.clear();
 		// qDebug() << "fingers: ";
-		qDebug() << "----";
+		// qDebug() << "----";
 		for(unsigned int i = 0; i < tmpContours.size(); i++)
 		{
 			unsigned int area = cv::contourArea(tmpContours[i]);
@@ -405,12 +405,12 @@ public:
 			// if(Aratio > MIN_FINGER_RATIO && Aratio < MAX_FINGER_RATIO)
 			if(Dratio > 1.5 && Aratio < MAX_FINGER_RATIO)
 			{
-				qDebug() << "success ratios: " << Dratio << ", "<< Aratio;
+				// qDebug() << "success ratios: " << Dratio << ", "<< Aratio;
 				// qDebug()<< (double)area/palmRadius;
 				fingers.push_back(tmpFing);
 			}
-			else
-				qDebug() << "fail ratio: " << Dratio << ", "<< Aratio;
+//			else
+				// qDebug() << "fail ratio: " << Dratio << ", "<< Aratio;
 		}
 
 		return handROI;

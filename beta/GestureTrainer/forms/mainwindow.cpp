@@ -234,7 +234,7 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 
 }
 
-cv::Mat MainWindow::trainHand( const cv::Mat img )
+cv::Mat MainWindow::measureHands( const cv::Mat img )
 {
 	cv::Mat result = img.clone();
 	cv::Rect captureRect;
@@ -252,6 +252,15 @@ cv::Mat MainWindow::trainHand( const cv::Mat img )
 
 
 	return result;
+}
+
+cv::Mat MainWindow::trainUser(cv::Mat img)
+{
+	cv::Mat binary = processSkin(img);
+	cv::Mat result = processHand(img, binary);
+	
+
+	return img;
 }
 
 void MainWindow::loadDefaultHands()
@@ -333,9 +342,11 @@ void MainWindow::updateTimer()
 	if(backProcess)
 		result = processSkin(img);
 	else if(measureHand)
-		result = trainHand(img);
+		result = measureHands(img);
 	else if(handDetect)
 		result = detectHand(img);
+	else if(training)
+		result = trainUser(img);
 
 	if (!result.empty())
 		img = result;
@@ -359,16 +370,19 @@ void MainWindow::on_tabWidget_currentChanged(int index)
 			histEnable = false;
 			handDetect = false;
 			measureHand = false;
+			training = false;
 			break;
 		case BACKGROUND_TAB:
 			handDetect = false;
 			measureHand = false;
+			training = false;
 			break;
 		case MEASURE_TAB:
 			backProcess = false;
 			histEnable = false;
 			handDetect = false;
 			measureHand = true;
+			training = false;
 			user.fist = Hand();
 			user.spread = Hand();
 			break;
@@ -376,6 +390,16 @@ void MainWindow::on_tabWidget_currentChanged(int index)
 			backProcess = false;
 			histEnable = false;
 			measureHand = false;
+			training = false;
+			break;
+		case TRAIN_TAB:
+			backProcess = false;
+			histEnable = false;
+			measureHand = false;
+			handDetect = false;
+			// copy the total gestures to the current set
+			currentGoalSet = goalGestures;
+			ui->pushButton_Training->setText("Begin Training");
 			break;
 		default:
 			break;
@@ -471,31 +495,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 	}
 }
 
-//void MainWindow::trainUser()
-//{
-//	std::vector<std::string> images;
-//	images.push_back("A"); 
-//	images.push_back("I"); 
-//	images.push_back("L"); 
-//	images.push_back("T"); 
-//	images.push_back("V"); 
-//	images.push_back("W"); 
-//	images.push_back("Y"); 
 
-//    for(std::string image : images)
-//	{
-//        QString imName = QString::fromStdString(":/goal/" + image + ".jpg");
-//        QPixmap img_pix(imName);
-//		ui->label_Goal->setPixmap(img_pix.scaled(
-//				ui->label_Goal->size(), Qt::KeepAspectRatio));
-
-//        while(!(user.contComparing(image)))
-//		{
-
-//		}
-//	}
-
-//}
 
 
 //---------Background Buttons--------------
@@ -745,5 +745,54 @@ void MainWindow::on_comboBox_currentIndexChanged(int index)
 	setSliders();
 }
 
+void MainWindow::on_pushButton_Training_clicked()
+{
+	if(timer->isActive())
+	{
+		training = !training;
+		if(training)
+		{
+			ui->pushButton_Training->setText("Pause Training");
+
+			if(currentGoalSet.empty())
+			{
+				currentGoalSet = goalGestures;
+
+				std::random_device rd;
+				std::mt19937 g(rd());
+				std::shuffle(currentGoalSet.begin(), currentGoalSet.end(), g);
+			}
+			
+			std::string gesture = currentGoalSet.back();
+
+			QString str = QString::fromStdString(goalDir + 
+							gesture + imgExtension);
+			// qDebug() << str;
+
+			QPixmap img_pix(str);
+			ui->label_Goal->setPixmap(img_pix.scaled(
+					ui->label_Goal->size(), Qt::KeepAspectRatio));
+
+			str = QString("Please make the gesture signifying the letter %1"
+						" as shown below in the left-hand box")
+						.arg(gesture.c_str());
+			ui->feedbackBrowser->setText(str);
+
+			numSuccesses = 0;
+
+		}
+		else
+		{
+			ui->pushButton_Training->setText("Resume Training");
+			// CLear the label
+			QPixmap img_pix(250,250); 
+			img_pix.fill();
+			ui->label_Example->setPixmap(img_pix);
+			ui->feedbackBrowser->setText("");
+		}
+
+	}
+}
 // END Slots
 //##############################################################################
+

@@ -38,6 +38,10 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <random>
+#include <algorithm>
+#include <iterator>
 
 // Local Includes
 #include "../detectors/skindetectcontroller.h"	//singleton processes skin regions
@@ -65,11 +69,13 @@ protected:
 	// Utilities
 	void displayMat(const cv::Mat img, QLabel *label);
 	cv::Mat processSkin( const cv::Mat img );
-    cv::Mat processHand( const cv::Mat color, const cv::Mat binary );
+	cv::Mat processHand( const cv::Mat color, const cv::Mat binary );
 	cv::Mat detectHand( const cv::Mat img );
-	cv::Mat trainHand( cv::Mat img );
+	cv::Mat measureHands( cv::Mat img );
+	cv::Mat trainUser( cv::Mat img );
 
-    bool copyFile(const QString& src, const QString& dst);
+
+	bool copyFile(const QString& src, const QString& dst);
 
 	void loadDefaultHands();
 
@@ -87,12 +93,12 @@ private:
 
 	// timer vars
 	QTimer *timer;
-	bool backProcess, histEnable, handDetect, measureHand;
+	bool backProcess, histEnable, handDetect, measureHand, training;
 
 	// thresholding masks
 	cv::Scalar min, max;
-    std::vector<std::vector<cv::Scalar> > locations;
-    std::vector<QString> locationNames;
+	std::vector<std::vector<cv::Scalar> > locations;
+	std::vector<QString> locationNames;
 
 	// histogram vars
 	cv::Mat histogram;
@@ -100,6 +106,14 @@ private:
 
 	// The users data
 	User user;
+
+	// Training vars
+	std::vector<std::string> goalGestures = {"A", "V", "I", "T", "L", "Y","W"};
+	std::vector<std::string> currentGoalSet;
+	std::string imgExtension = ".jpg";
+	std::string goalDir = ":/img/goal/";
+	int numSuccesses;
+	HandType curType;
 
 
 	// CONSTANTS
@@ -109,6 +123,7 @@ private:
 		BACKGROUND_TAB = 1,
 		MEASURE_TAB = 2,
 		DETECT_TAB = 3,
+		TRAIN_TAB = 4,
 	// Camera ( 0 = sys default / 1 = iGlasses )
 		CAMERA = 0,
 	// Timer delay in ms
@@ -116,7 +131,7 @@ private:
 
 	cv::Scalar COLOR_CAP_RECT = cv::Scalar(0,0,125);
 
-    std::string LOC_PREFS = "../../../../GestureTrainer/prefs/location.prefs.dat";
+	std::string LOC_PREFS = "../../../../GestureTrainer/prefs/location.prefs.dat";
 
 	
 private slots:
@@ -126,8 +141,8 @@ private slots:
 	void setImage();
 	void toggleCamera();
 	void keyPressEvent(QKeyEvent *e);
-    void on_comboBox_currentIndexChanged(int index);
-    //void trainUser();
+	void on_comboBox_currentIndexChanged(int index);
+	//void trainUser();
 
 	//Background Slots
 	void processColorDetection();
@@ -144,9 +159,10 @@ private slots:
 	void on_check_Erode_stateChanged(int state);
 	void on_check_Dilate_stateChanged(int state);
 	void on_check_Blur_stateChanged(int state);
-    void on_pushButton_Detect_clicked();
-    void on_pushButton_Save_clicked();
-    void on_checkBox_stateChanged(int state);
+	void on_pushButton_Detect_clicked();
+	void on_pushButton_Save_clicked();
+	void on_checkBox_stateChanged(int state);
+    void on_pushButton_Training_clicked();
 };
 
 #endif // MAINWINDOW_H
