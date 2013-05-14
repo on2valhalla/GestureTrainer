@@ -116,7 +116,6 @@ public:
 		double rise = (a.y-b.y);
 		double run = (a.x-b.x);
 		double slope = rise/run;
-		// std::cout << slope << std::endl;
 		return slope;
 	}
 
@@ -147,7 +146,7 @@ public:
 				case RIGHT:
 					c2bSLOPE = calcSlope(contour[c], contour[b]);
 					sigSlope = c2bSLOPE;
-					if(c2eSLOPE < 0.5)
+					if(c2bSLOPE < 0.5)
 						curHand.type = T; //EXPAND
 					else
 						curHand.type = A;
@@ -170,15 +169,16 @@ public:
 
 		if(count == 1)
 		{
-
+			//probably an I
+			
 		}
 		else if(count == 2)
 		{
-
+			//can be an L or a V
 		}
 		else if(count == 3)
 		{
-
+			//probably a W
 		}
 		else 
 			curHand.type = PALM;
