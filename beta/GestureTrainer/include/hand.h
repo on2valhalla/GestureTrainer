@@ -249,6 +249,34 @@ public:
 		}
 	}
 
+	static HandType translateType(std::string type)
+	{
+		if(type == "UNK")
+			return UNK;
+		else if(type == "A")
+			return A;
+		else if(type == "I")
+			return I;
+		else if(type == "L")
+			return L;
+		else if(type == "T")
+			return T;
+		else if(type == "V")
+			return V;
+		else if(type == "W")
+			return W;
+		else if(type == "Y")
+			return Y;
+		else if(type == "FIST")
+			return FIST;
+		else if(type == "PALM")
+			return PALM;
+		else if(type == "FINGERS")
+			return FINGERS;
+		else
+			return NONE;
+	}
+
 	bool isNone() const
 	{
 		return type == NONE;

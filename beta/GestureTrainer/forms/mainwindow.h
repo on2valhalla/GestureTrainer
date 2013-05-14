@@ -109,7 +109,7 @@ private:
 
 	// Training vars
 	std::vector<std::string> goalGestures = {"A", "V", "I", "T", "L", "Y","W"};
-	std::vector<std::string> currentGoalSet;
+	std::vector<std::string> curGoalSet;
 	std::string imgExtension = ".jpg";
 	std::string goalDir = ":/img/goal/";
 	int numSuccesses;

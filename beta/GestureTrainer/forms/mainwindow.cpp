@@ -258,6 +258,53 @@ cv::Mat MainWindow::trainUser(cv::Mat img)
 {
 	cv::Mat binary = processSkin(img);
 	cv::Mat result = processHand(img, binary);
+
+	if( user.curHand.isNone() )
+		return img;
+    else if ( user.curHand.getType().toStdString() == curGoalSet.back())
+	{
+		numSuccesses++;
+		if(numSuccesses >= 3)
+		{
+			//VICTORY
+            QString str = QString("\nSuccess, you have shown the letter %1.")
+                    .arg(curGoalSet.back().c_str());
+			ui->feedbackBrowser->append(str);
+			numSuccesses = 0;
+			
+            curGoalSet.pop_back();
+
+			if(curGoalSet.empty())
+			{
+				// Training is done
+				str = QString("Congratulations, you have finished the training"
+							" corpus. Press the training button to begin again"
+							" or step aside and let someone else train.");
+				ui->feedbackBrowser->setText(str);
+				on_pushButton_Training_clicked();
+				return img;
+			}
+
+
+			std::string gesture = curGoalSet.back();
+			curType = Hand::translateType(gesture);
+
+            str = QString::fromStdString(goalDir +
+							gesture + imgExtension);
+			// qDebug() << str;
+
+			QPixmap img_pix(str);
+			ui->label_Goal->setPixmap(img_pix.scaled(
+					ui->label_Goal->size(), Qt::KeepAspectRatio));
+
+		}
+		//CONTINUATION
+	}
+	else
+	{
+		//FAILURE
+		numSuccesses = 0;
+	}
 	
 
 	return img;
@@ -398,7 +445,7 @@ void MainWindow::on_tabWidget_currentChanged(int index)
 			measureHand = false;
 			handDetect = false;
 			// copy the total gestures to the current set
-			currentGoalSet = goalGestures;
+			curGoalSet = goalGestures;
 			ui->pushButton_Training->setText("Begin Training");
 			break;
 		default:
@@ -754,16 +801,17 @@ void MainWindow::on_pushButton_Training_clicked()
 		{
 			ui->pushButton_Training->setText("Pause Training");
 
-			if(currentGoalSet.empty())
+			if(curGoalSet.empty())
 			{
-				currentGoalSet = goalGestures;
+				curGoalSet = goalGestures;
 
 				std::random_device rd;
 				std::mt19937 g(rd());
-				std::shuffle(currentGoalSet.begin(), currentGoalSet.end(), g);
+				std::shuffle(curGoalSet.begin(), curGoalSet.end(), g);
 			}
 			
-			std::string gesture = currentGoalSet.back();
+			std::string gesture = curGoalSet.back();
+			curType = Hand::translateType(gesture);
 
 			QString str = QString::fromStdString(goalDir + 
 							gesture + imgExtension);
@@ -783,7 +831,10 @@ void MainWindow::on_pushButton_Training_clicked()
 		}
 		else
 		{
-			ui->pushButton_Training->setText("Resume Training");
+			if(curGoalSet.empty())
+				ui->pushButton_Training->setText("Begin Training");
+			else
+				ui->pushButton_Training->setText("Resume Training");
 			// CLear the label
 			QPixmap img_pix(250,250); 
 			img_pix.fill();
