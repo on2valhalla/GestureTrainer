@@ -301,37 +301,38 @@ public:
 		if(tmpDefects.size() <= 0)
 			return;
 
-		if(MIN_DEFECT_SIZE == 0.0) // use average circle for palm
+		// if(MIN_DEFECT_SIZE == 0.0) // use average circle for palm
+		if(false)
 		{
-			/* Average depth points to get hand center */
-			int x =0, y=0;
-			for (cv::Vec4i defect : tmpDefects)
-			{
-				if(defect[3]/256.0 < MIN_DEFECT_SIZE)
-					continue;
+			// /* Average depth points to get hand center */
+			// int x =0, y=0;
+			// for (cv::Vec4i defect : tmpDefects)
+			// {
+			// 	if(defect[3]/256.0 < MIN_DEFECT_SIZE)
+			// 		continue;
 
-				x += contour[0][defect[2]].x;
-				y += contour[0][defect[2]].y;
+			// 	x += contour[0][defect[2]].x;
+			// 	y += contour[0][defect[2]].y;
 
-				defects.push_back(defect);
-			}
+			// 	defects.push_back(defect);
+			// }
 
-			if(defects.size() <= 0)
-				return;
+			// if(defects.size() <= 0)
+			// 	return;
 
-			palmCenter.x = x/defects.size();
-			palmCenter.y = y/defects.size();
+			// palmCenter.x = x/defects.size();
+			// palmCenter.y = y/defects.size();
 
-			/* Compute hand radius as mean of distances of
-			   defects' depth point to hand center */
-			int dist = 0;
-			for(cv::Vec4i defect : defects)
-			{
-				cv::Point2f tmpPoint = contour[0][defect[2]];
-				dist += pointDist(palmCenter, tmpPoint);
-			}
+			// /* Compute hand radius as mean of distances of
+			//    defects' depth point to hand center */
+			// int dist = 0;
+			// for(cv::Vec4i defect : defects)
+			// {
+			// 	cv::Point2f tmpPoint = contour[0][defect[2]];
+			// 	dist += pointDist(palmCenter, tmpPoint);
+			// }
 
-			palmRadius = ((double)dist) / defects.size();
+			// palmRadius = ((double)dist) / defects.size();
 
 		}
 		else  // use minimum enclosing circle
