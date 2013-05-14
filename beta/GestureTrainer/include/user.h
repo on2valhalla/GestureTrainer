@@ -210,7 +210,7 @@ public:
 				case RIGHT:
 					c2bSLOPE = calcSlope(contour[c], contour[b]);
 					sigSlope = c2bSLOPE;
-					if(c2bSLOPE < -1.0)
+					if(c2bSLOPE < -0.5)
 						curHand.type = T; //EXPAND
 					else
 						curHand.type = A;
@@ -253,10 +253,17 @@ public:
 
 			if(subVind2mid < subVthumb2pink)
 			{
-				if(subVind2mid < subVthumb2ind)
-					curHand.type = V;
-				else
-					curHand.type = L;
+                if((subVind2mid < subVthumb2ind))
+                        curHand.type = V;
+                else
+                {
+                    if((fingers[0].angle > 2.2) || (fingers[1].angle > 2.2)
+                        || (fingers[0].angle < 0.5) || (fingers[1].angle < 0.5))
+                            curHand.type = L;
+                    else
+                        curHand.type = V;
+                 }
+
 			}
 			else if(subVthumb2pink < subVthumb2ind)
 				curHand.type = Y;
