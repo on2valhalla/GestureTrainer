@@ -132,7 +132,6 @@ public:
 			contour.push_back(c);
 
 			calcTraits();
-			findClass();
 		}
 	}
 
@@ -293,7 +292,7 @@ public:
 		if(tmpDefects.size() <= 0)
 			return;
 
-        if(MIN_DEFECT_SIZE == 0.0) // use average circle for palm
+		if(MIN_DEFECT_SIZE == 0.0) // use average circle for palm
 		{
 			/* Average depth points to get hand center */
 			int x =0, y=0;
@@ -307,11 +306,6 @@ public:
 
 				defects.push_back(defect);
 			}
-
-
-			// Calculate palm center and enclosing circle
-			palmCenter = cv::Point(0,0);
-			palmRadius = 0;
 
 			if(defects.size() <= 0)
 				return;
@@ -420,10 +414,12 @@ public:
 					fingers[i].tip = fingers[i].contour[j];
 				}
 			}
-
-			fingers[i].ellipse = cv::fitEllipse(fingers[i].contour);
 			tmpPoint = fingers[i].tip + boxRect.tl();
 			fingers[i].angle = angleOfPoints(palmCenter, tmpPoint);
+
+			if(fingers[i].contour.size() <= 5)
+				continue;
+			fingers[i].ellipse = cv::fitEllipse(fingers[i].contour);
 		}
 	}
 
@@ -499,7 +495,7 @@ public:
 	bool eliminateWrist()
 	{
 		if(type == NONE || palmRadius == 0 || 
-            boxRect.height <= 0 )
+			boxRect.height <= 0 )
 			return false;
 
 		// qDebug() <<boxRect.x << " " << boxRect.y << " " << boxRect.height
@@ -625,7 +621,7 @@ public:
 			// 		HALF_BLUE, 3, CV_AA );
 		}
 
-        if(palmCenter.x && palmCenter.y && palmRadius >= 0)
+		if(palmCenter.x && palmCenter.y && palmRadius >= 0)
 			cv::circle( image, palmCenter, palmRadius, HALF_BLUE, 3 );
 
 		// // draw bounding rotated rectangles
