@@ -33,6 +33,12 @@ public:
 	cv::Vec4i thumbDefect;
 	Direction orient;
 
+	Finger thumb;
+	Finger index;
+	Finger middle;
+	Finger ring;
+	Finger pinky;
+
 	Hand curHand;
 	std::deque<double> palmRadii;
 	std::deque<cv::Point2f> palmCenters;
@@ -64,6 +70,12 @@ public:
 		c2bSLOPE = h.c2bSLOPE;
 		orient = h.orient;
 
+		pinky = h.pinky;
+		index = h.index;
+		middle = h.middle;
+		ring = h.ring;
+		pinky = h.pinky;
+
 		sigSlope = h.sigSlope;
 	}
 
@@ -78,6 +90,12 @@ public:
 		c2eSLOPE = rhs.c2eSLOPE;
 		c2bSLOPE = rhs.c2bSLOPE;
 		orient = rhs.orient;
+
+		pinky = rhs.pinky;
+		index = rhs.index;
+		middle = rhs.middle;
+		ring = rhs.ring;
+		pinky = rhs.pinky;
 
 		sigSlope = rhs.sigSlope;
 
@@ -94,6 +112,50 @@ public:
 	{
 		spread = hand;
 		cleanDefects(spread);
+		setFingers();
+	}
+
+	void setFingers()
+	{
+		std::vector<Finger> fingers = spread.fingers;
+
+		thumb = fingers[0];
+		std::cout << thumb.angle << std::endl;
+		pinky = fingers[1];
+		ring = fingers[2];
+		middle = fingers[3];
+        index = fingers[4];
+
+
+		for(Finger finger : fingers)
+		{
+			if(thumb.angle < finger.angle)
+				swapFingers(&thumb, &finger);
+		}
+
+		for(Finger finger: fingers)
+		{
+			if(pinky.angle > finger.angle)
+                swapFingers(&pinky, &finger);
+		}
+
+		if(ring.angle < index.angle)
+			swapFingers(&ring, &index);
+
+		if(ring.angle < middle.angle)
+			swapFingers(&ring, &middle);
+
+		if(index.angle < middle.angle)
+			swapFingers(&index, &middle);
+
+	}
+
+
+    void swapFingers(Finger* a, Finger* b)
+	{
+		Finger temp = *b;
+		*b = *a;
+		*a = temp;
 	}
 
 	void setCurHand(const Hand& hand)
@@ -169,16 +231,32 @@ public:
 
 		if(count == 1)
 		{
-			//probably an I
+			curHand.type = I;
 			
 		}
 		else if(count == 2)
 		{
-			//can be an L or a V
+			std::vector<Finger> fingers = curHand.fingers;
+
+			double subAngle = fingers[0].angle - fingers[1].angle;
+
+			if(subAngle == std::abs(index.angle-middle.angle)
+				curHand.type = V;
+			else if(subAngle == std::abs(middle.angle-index.angle))
+				curHand.tyep = V;
+			else if(subAngle == std::abs(thumb.angle-pinky.angle))
+				curHand.type = Y;
+			else if(subAngle == std::abs(thumb.angle-pinky.angle))
+				curHand.type = Y;
+			else if(subAngle == std::abs(thumb.angle-index.angle))
+				curHand.type = L;
+			else if(subAngle == std::abs(index.angle-thumb.angle))
+				curHand.type = L;
+
 		}
 		else if(count == 3)
 		{
-			//probably a W
+			curHand.type = W;
 		}
 		else 
 			curHand.type = PALM;
@@ -289,9 +367,17 @@ public:
 	{
 		QString data = QString(
 					"Orientation: %1\n"
-					"SLOPE: %2\n")
+					"SLOPE: %2\n"
+					"THUMB: %3\nINDEX: %4"
+					"\nMIDDLE: %5\nRING: %6"
+					"\nPINKY: %7\n")
 					   .arg(getOrient())
-					   .arg(sigSlope);
+					   .arg(sigSlope)
+					   .arg(thumb.angle)
+					   .arg(index.angle)
+					   .arg(middle.angle)
+					   .arg(ring.angle)
+					   .arg(pinky.angle);
 
 		return data;
 	}

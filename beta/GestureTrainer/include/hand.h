@@ -432,7 +432,7 @@ public:
 
 			fingers[i].ellipse = cv::fitEllipse(fingers[i].contour);
 			tmpPoint = fingers[i].tip + boxRect.tl();
-			fingers[i].angle = angleOfPoints(palmCenter, tmpPoint);
+			fingers[i].angle = std::abs(angleOfPoints(palmCenter, tmpPoint));
 		}
 	}
 
@@ -526,8 +526,6 @@ public:
 
 		return true;
 	}
-
-
 
 	void findClass()
 	{
@@ -642,7 +640,7 @@ public:
 		{
 		 	QString str =  QString::number(i);
             putText(image, str.toStdString(), (fingers[i].tip + boxRect.tl()),
-		 			cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(0,0,0));
+		 			cv::FONT_HERSHEY_COMPLEX_SMALL, 5, cv::Scalar(0,0,0));
 		}
 
 		displayType(image);
