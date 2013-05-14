@@ -210,7 +210,7 @@ public:
 				case RIGHT:
 					c2bSLOPE = calcSlope(contour[c], contour[b]);
 					sigSlope = c2bSLOPE;
-					if(c2bSLOPE < 1.0)
+					if(c2bSLOPE < -1.0)
 						curHand.type = T; //EXPAND
 					else
 						curHand.type = A;
