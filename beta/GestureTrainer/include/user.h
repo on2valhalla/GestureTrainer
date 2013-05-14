@@ -243,9 +243,9 @@ public:
 
 			double subAngle = std::abs(fingers[0].angle - fingers[1].angle);
 
-			qDebug() << "subAngle: " << (double) subAngle;
-			qDebug() << "teestAngle: " << (double) (middle.angle-index.angle);
-			qDebug() << "testAngle: " << (double) (index.angle-middle.angle);
+			// qDebug() << "subAngle: " << (double) subAngle;
+			// qDebug() << "teestAngle: " << (double) (middle.angle-index.angle);
+			// qDebug() << "testAngle: " << (double) (index.angle-middle.angle);
 
             if(subAngle == std::abs(index.angle-middle.angle))
 				curHand.type = V;

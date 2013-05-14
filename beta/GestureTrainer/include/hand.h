@@ -100,8 +100,8 @@ private:
 							MAX_FINGER_SIZE = 3000,
 							MIN_FINGER_SIZE = 700;
 	double MIN_DEFECT_SIZE = 10.0,
-			MIN_FINGER_RATIO = 6.0,
-			MAX_FINGER_RATIO = 30.0;
+			MIN_FINGER_RATIO = 10.0,
+			MAX_FINGER_RATIO = 50.0;
 
 
 
@@ -363,6 +363,8 @@ public:
 
 	cv::Mat extractFingers(cv::Mat handROI)
 	{
+		if(!palmCenter.x || !palmCenter.y)
+			return cv::Mat::zeros(10,10,CV_8UC1);
 		// qDebug() << boxRect.tl().x << ", " << boxRect.tl().y;
 		cv::Point2f palmCenterROI(palmCenter.x - boxRect.tl().x,
 							palmCenter.y - boxRect.tl().y);
@@ -388,20 +390,27 @@ public:
 
 		fingers.clear();
 		// qDebug() << "fingers: ";
+		qDebug() << "----";
 		for(unsigned int i = 0; i < tmpContours.size(); i++)
 		{
 			unsigned int area = cv::contourArea(tmpContours[i]);
 			double Aratio = (double)area/palmRadius;
 			// qDebug() << "\t" << (double)area/palmRadius;
+			Finger tmpFing;
+			tmpFing.contour = tmpContours[i];
+			double tipDist = findFingerTip(tmpFing);
+			double Dratio = tipDist/palmRadius;
 
 			// if(area > MIN_FINGER_SIZE && area < MAX_FINGER_SIZE)
-			if(Aratio > MIN_FINGER_RATIO && Aratio < MAX_FINGER_RATIO)
+			// if(Aratio > MIN_FINGER_RATIO && Aratio < MAX_FINGER_RATIO)
+			if(Dratio > 1.5 && Aratio < MAX_FINGER_RATIO)
 			{
+				qDebug() << "success ratios: " << Dratio << ", "<< Aratio;
 				// qDebug()<< (double)area/palmRadius;
-				Finger tmpFing;
-				tmpFing.contour = tmpContours[i];
 				fingers.push_back(tmpFing);
 			}
+			else
+				qDebug() << "fail ratio: " << Dratio << ", "<< Aratio;
 		}
 
 		return handROI;
@@ -412,28 +421,37 @@ public:
 		cv::Point2f tmpPoint;
 		for (unsigned int i = 0; i < fingers.size(); i++)
 		{
-			double maxDist = 0;
-			for (unsigned int j = 0; j < fingers[i].contour.size(); ++j)
-			{
-				tmpPoint = fingers[i].contour[j] + boxRect.tl();
-				double curDist = pointDist(palmCenter, tmpPoint);
+			findFingerTip(fingers[i]);
 
-				if(curDist > maxDist)
-				{
-					maxDist = curDist;
-					fingers[i].tip = fingers[i].contour[j];
-				}
-			}
+			tmpPoint = fingers[i].tip + boxRect.tl();
+
+			fingers[i].angle = std::abs(angleOfPoints(palmCenter, tmpPoint));
 
 			if(fingers[i].contour.size() <= 5)
 				continue;
 
 			fingers[i].ellipse = cv::fitEllipse(fingers[i].contour);
-			tmpPoint = fingers[i].tip + boxRect.tl();
-			fingers[i].angle = std::abs(angleOfPoints(palmCenter, tmpPoint));
 		}
 	}
 
+	double findFingerTip(Finger& f)
+	{
+		f.tip = f.contour[0];
+		cv::Point2f tmpPoint;
+		double maxDist = 0;
+		for (unsigned int j = 0; j < f.contour.size(); ++j)
+		{
+			tmpPoint = f.contour[j] + boxRect.tl();
+			double curDist = pointDist(palmCenter, tmpPoint);
+
+			if(curDist > maxDist)
+			{
+				maxDist = curDist;
+				f.tip = f.contour[j];
+			}
+		}
+		return maxDist;
+	}
 
 	cv::Mat findFingers()
 	{
