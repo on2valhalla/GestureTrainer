@@ -139,13 +139,13 @@ public:
                 swapFingers(&pinky, &finger);
 		}
 
-		if(ring.angle < index.angle)
+		if(ring.angle > index.angle)
 			swapFingers(&ring, &index);
 
-		if(ring.angle < middle.angle)
+		if(ring.angle > middle.angle)
 			swapFingers(&ring, &middle);
 
-		if(index.angle < middle.angle)
+		if(middle.angle > index.angle)
 			swapFingers(&index, &middle);
 
 	}

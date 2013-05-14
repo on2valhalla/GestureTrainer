@@ -649,10 +649,17 @@ public:
 
 		for(unsigned int i = 0; i < fingers.size(); i++)
 		{
-		 	QString str =  QString::number(i);
-            putText(image, str.toStdString(), (fingers[i].tip + boxRect.tl()),
-		 			cv::FONT_HERSHEY_COMPLEX_SMALL, 5, cv::Scalar(0,0,0));
+			QString str =  QString::number(i);
+			putText(image, str.toStdString(), (fingers[i].tip + boxRect.tl()),
+					cv::FONT_HERSHEY_COMPLEX_SMALL, 5, cv::Scalar(0,0,0));
 		}
+
+		// for(unsigned int i = 0; i < contour[0].size(); i+10)
+		// {
+		// 	QString str =  QString::number(i);
+		//   putText(image, str.toStdString(), contour[0][i],
+		// 			cv::FONT_HERSHEY_COMPLEX_SMALL, 5, cv::Scalar(0,0,0));
+		// }
 
 		displayType(image);
 		
@@ -698,13 +705,14 @@ public:
 		for(Finger finger : fingers)
 		{
 			data.append(QString("\nFinger[%1]: %2")
-                            .arg(i)
-                            .arg(finger.angle, 4, 'g'));
+							.arg(i)
+							.arg(finger.angle, 4, 'g'));
 			i++;
 		}
 
 		return data;
 	}
+
 
 //	END Utility Functions
 //##############################################################################
