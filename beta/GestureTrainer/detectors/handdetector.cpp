@@ -95,7 +95,7 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat binImg)
 		lastHand = Hand();
 	else
 	{
-		approxPolyDP(maxContour, maxContour, 2, true);
+		// approxPolyDP(maxContour, maxContour, 2, true);
 
 		// QString str = "find: ";
 		// for(cv::Point c : maxContour)
