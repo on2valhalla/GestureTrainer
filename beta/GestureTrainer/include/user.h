@@ -315,13 +315,13 @@ public:
 			defects.erase(defects.begin() + minDefect);
 		}
 
-		cv::Vec4i leftMost = defects[defects.size() - 1];
-		cv::Vec4i rightMost = defects[0];
+		// cv::Vec4i leftMost = defects[defects.size() - 1];
+		// cv::Vec4i rightMost = defects[0];
 
-		if(leftMost[3]/256.0 < rightMost[3]/256.0)
-			orient = LEFT;
-		else
-			orient = RIGHT;
+		// if(leftMost[3]/256.0 < rightMost[3]/256.0)
+		// 	orient = LEFT;
+		// else
+		// 	orient = RIGHT;
 	}
 
 	void radiusSmoothing()
