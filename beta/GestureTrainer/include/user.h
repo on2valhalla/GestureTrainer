@@ -210,7 +210,7 @@ public:
 				case RIGHT:
 					c2bSLOPE = calcSlope(contour[c], contour[b]);
 					sigSlope = c2bSLOPE;
-					if(c2bSLOPE < 0.5)
+					if(c2bSLOPE < 1.0)
 						curHand.type = T; //EXPAND
 					else
 						curHand.type = A;
@@ -243,19 +243,11 @@ public:
 			double subAngle = std::abs(fingers[0].angle - fingers[1].angle);
 			//qDebug() << "subAngle: " << subAngle;
 
-			double ind2mid = std::abs(index.angle-middle.angle);
-			//qDebug() << "ind2mid: " << ind2mid;
-			double thumb2pink = std::abs(thumb.angle-pinky.angle);
-			//qDebug() << "thumb2pink: " << thumb2pink;
-			double thumb2ind = std::abs(thumb.angle-index.angle);
-			//qDebug() << "thumb2ind: " << thumb2ind;
-
-
-			double subVind2mid = std::abs(subAngle - ind2mid);
+			double subVind2mid = std::abs(subAngle - std::abs(index.angle-middle.angle));
 			qDebug() << "subVind2mid: " << subVind2mid; 
-			double subVthumb2pink = std::abs(subAngle - thumb2pink);
+			double subVthumb2pink = std::abs(subAngle - std::abs(thumb.angle-pinky.angle));
 			qDebug() << "subVthumb2pink: " << subVthumb2pink;
-			double subVthumb2ind = std::abs(subAngle - thumb2ind);
+			double subVthumb2ind = std::abs(subAngle - std::abs(thumb.angle-index.angle));
 			qDebug() << "subVthumb2ind: " << subVthumb2ind;
 			
 
