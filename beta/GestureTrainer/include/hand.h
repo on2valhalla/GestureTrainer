@@ -522,14 +522,6 @@ public:
 
 	void findClass()
 	{
-		// double handMass = mom.m00;
-
-		// phRatio = palmArea/handMass;
-		// if(phRatio > 0.70)
-		// 	type = FIST;
-		// else
-		// 	type = PALM;
-
 		if(fingers.size() >= 1)
 		{
 			type = PALM;
@@ -684,11 +676,11 @@ public:
 					.arg(fingers.size())
 					.arg(MIN_DEFECT_SIZE);
 
-		for(cv::Vec4i defect : defects)
-		{
-			data.append(QString("\nDefect Lengths: %1")
-							.arg(defect[3]/256.0, 4, 'g'));
-		}
+		//for(cv::Vec4i defect : defects)
+		//{
+		//	data.append(QString("\nDefect Lengths: %1")
+		//					.arg(defect[3]/256.0, 4, 'g'));
+		//}
 
 		return data;
 	}

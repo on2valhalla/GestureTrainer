@@ -40,6 +40,7 @@ public:
 
 	double c2eSLOPE;
 	double c2bSLOPE;
+	double sigSlope;
 
 	//Constructor
 	User()
@@ -48,7 +49,7 @@ public:
 		{
 			palmRadii[i] = 0;
 		}
-		orient = RIGHT;
+		orient = LEFT;
 	}
 
 	//copy constructor
@@ -62,6 +63,8 @@ public:
 		c2eSLOPE = h.c2eSLOPE;
 		c2bSLOPE = h.c2bSLOPE;
 		orient = h.orient;
+
+		sigSlope = h.sigSlope;
 	}
 
 	//assignment operator
@@ -75,6 +78,8 @@ public:
 		c2eSLOPE = rhs.c2eSLOPE;
 		c2bSLOPE = rhs.c2bSLOPE;
 		orient = rhs.orient;
+
+		sigSlope = rhs.sigSlope;
 
 		return *this;
 	}
@@ -132,6 +137,7 @@ public:
 			{
 				case LEFT:
 					c2eSLOPE = calcSlope(contour[c], contour[e]);
+					sigSlope = c2eSLOPE;
 					if(c2eSLOPE > 0.5)
 						curHand.type = T;  //EXPAND
 					else
@@ -140,6 +146,7 @@ public:
 					break;
 				case RIGHT:
 					c2bSLOPE = calcSlope(contour[c], contour[b]);
+					sigSlope = c2bSLOPE;
 					if(c2eSLOPE < 0.5)
 						curHand.type = T; //EXPAND
 					else
@@ -147,7 +154,7 @@ public:
 					search = 0;
 					break;			
 				default:
-					curHand.type = A;
+					curHand.type = FIST;
 					break;
 			}
 
@@ -281,8 +288,10 @@ public:
 	QString getData()
 	{
 		QString data = QString(
-					"Orientation: %1\n")
-					   .arg(getOrient());
+					"Orientation: %1\n"
+					"SLOPE: %2\n")
+					   .arg(getOrient())
+					   .arg(sigSlope);
 
 		return data;
 	}
