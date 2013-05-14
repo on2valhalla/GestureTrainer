@@ -241,7 +241,11 @@ public:
 		{
 			std::vector<Finger> fingers = curHand.fingers;
 
-			double subAngle = fingers[0].angle - fingers[1].angle;
+			double subAngle = std::abs(fingers[0].angle - fingers[1].angle);
+
+			qDebug() << "subAngle: " << (double) subAngle;
+			qDebug() << "teestAngle: " << (double) (middle.angle-index.angle);
+			qDebug() << "testAngle: " << (double) (index.angle-middle.angle);
 
             if(subAngle == std::abs(index.angle-middle.angle))
 				curHand.type = V;

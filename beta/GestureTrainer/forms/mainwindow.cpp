@@ -451,7 +451,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 		}
 		else if(user.spread.isNone())
 		{
-			user.spread = user.curHand;
+			user.setSpreadHand(user.curHand);
 			// CLear the label, done with measurement
 			QPixmap img_pix(250,250); 
 			img_pix.fill();
