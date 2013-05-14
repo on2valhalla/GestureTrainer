@@ -59,9 +59,8 @@ enum HandType{
 	//FILL IN MORE TYPES AS WE FIGURE THEM OUT
 	UNK,
 	FIST,
-	T,
-	A,
 	PALM,
+	A, I, L, T, V, W, Y,
 	FINGERS,
 	NONE
 };
@@ -225,10 +224,20 @@ public:
 		{
 			case UNK:
 				return QString("UNK");
-			case T:
-				return QString("T");
 			case A:
 				return QString("A");
+			case I:
+				return QString("I");
+			case L:
+				return QString("L");
+			case T:
+				return QString("T");
+			case V:
+				return QString("V");
+			case W:
+				return QString("W");
+			case Y:
+				return QString("Y");
 			case FIST:
 				return QString("FIST");
 			case PALM:
@@ -420,6 +429,8 @@ public:
 			if(fingers[i].contour.size() <= 5)
 				continue;
 			fingers[i].ellipse = cv::fitEllipse(fingers[i].contour);
+			tmpPoint = fingers[i].tip + boxRect.tl();
+			fingers[i].angle = std::abs(angleOfPoints(palmCenter, tmpPoint));
 		}
 	}
 
@@ -517,8 +528,6 @@ public:
 
 		return true;
 	}
-
-
 
 	void findClass()
 	{
@@ -639,12 +648,12 @@ public:
 
 		///QString str = QString("%1").arg(mom.m00);
 
-		// for(unsigned int i = 0; i < contour[0].size(); i=i+10)
-		// {
-		// 	QString str =  QString::number(i);
-		// 	putText(image, str.toStdString(), contour[0][i],
-		// 			cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(200,200,250));
-		// }
+		for(unsigned int i = 0; i < fingers.size(); i++)
+		{
+		 	QString str =  QString::number(i);
+            putText(image, str.toStdString(), (fingers[i].tip + boxRect.tl()),
+		 			cv::FONT_HERSHEY_COMPLEX_SMALL, 5, cv::Scalar(0,0,0));
+		}
 
 		displayType(image);
 		
@@ -686,10 +695,13 @@ public:
 					.arg(fingers.size())
 					.arg(MIN_DEFECT_SIZE);
 
-		for(cv::Vec4i defect : defects)
+		int i = 0;
+		for(Finger finger : fingers)
 		{
-			data.append(QString("\nDefect Lengths: %1")
-							.arg(defect[3]/256.0, 4, 'g'));
+			data.append(QString("\nFinger[%1]: %2")
+                            .arg(i)
+                            .arg(finger.angle, 4, 'g'));
+			i++;
 		}
 
 		return data;
