@@ -120,7 +120,6 @@ public:
 		std::vector<Finger> fingers = spread.fingers;
 
 		thumb = fingers[0];
-		std::cout << thumb.angle << std::endl;
 		pinky = fingers[1];
 		ring = fingers[2];
 		middle = fingers[3];
@@ -242,24 +241,23 @@ public:
 			std::vector<Finger> fingers = curHand.fingers;
 
 			double subAngle = std::abs(fingers[0].angle - fingers[1].angle);
+			qDebug() << "subAngle: " << subAngle;
 
-			qDebug() << "subAngle: " << (double) subAngle;
-			qDebug() << "teestAngle: " << (double) (middle.angle-index.angle);
-			qDebug() << "testAngle: " << (double) (index.angle-middle.angle);
+			double ind2mid = std::abs(index.angle-middle.angle);
+			qDebug() << "ind2mid: " << ind2mid;
+			double thumb2pink = std::abs(thumb.angle-pinky.angle);
+			qDebug() << "thumb2pink: " << thumb2pink;
+			double thumb2ind = std::abs(thumb.angle-index.angle);
+			qDebug() << "thumb2ind: " << thumb2ind;
 
-            if(subAngle == std::abs(index.angle-middle.angle))
+            
+			if(((thumb2pink-0.5) < subAngle) && (subAngle < (thumb2pink+0.5)))
+				curHand.type = Y;
+			else if(((thumb2ind-0.5) < subAngle) && (subAngle < (thumb2ind+0.5)))
+				curHand.type = L;
+			if(((ind2mid-0.2) < subAngle) && (subAngle < (ind2mid+0.2)))
 				curHand.type = V;
-			else if(subAngle == std::abs(middle.angle-index.angle))
-                curHand.type = V;
-			else if(subAngle == std::abs(thumb.angle-pinky.angle))
-				curHand.type = Y;
-			else if(subAngle == std::abs(thumb.angle-pinky.angle))
-				curHand.type = Y;
-			else if(subAngle == std::abs(thumb.angle-index.angle))
-				curHand.type = L;
-			else if(subAngle == std::abs(index.angle-thumb.angle))
-				curHand.type = L;
-
+			
 		}
 		else if(count == 3)
 		{
