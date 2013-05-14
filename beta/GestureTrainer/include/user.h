@@ -210,7 +210,7 @@ public:
 				case RIGHT:
 					c2bSLOPE = calcSlope(contour[c], contour[b]);
 					sigSlope = c2bSLOPE;
-					if(c2bSLOPE < -0.5)
+					if(c2bSLOPE < -0.70)
 						curHand.type = T; //EXPAND
 					else
 						curHand.type = A;
@@ -314,13 +314,6 @@ public:
 			defects.erase(defects.begin() + minDefect);
 		}
 
-		cv::Vec4i leftMost = defects[defects.size() - 1];
-		cv::Vec4i rightMost = defects[0];
-
-		if(leftMost[3]/256.0 < rightMost[3]/256.0)
-			orient = LEFT;
-		else
-			orient = RIGHT;
 	}
 
 	void radiusSmoothing()
