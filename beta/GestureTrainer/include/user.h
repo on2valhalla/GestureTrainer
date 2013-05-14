@@ -94,6 +94,9 @@ public:
 	void setCurHand(const Hand& hand)
 	{
 		curHand = hand;
+        if(curHand.isNone())
+			return;
+		
 		radiusSmoothing();
 		centerSmoothing();
 

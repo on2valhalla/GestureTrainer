@@ -226,8 +226,8 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 //										.arg(user.fist.getB())
 //                                        .arg(user.spread.getB()));
 
-        ui->textBrowser->setText(user.getData());
-        ui->textBrowser->append(user.curHand.getData());
+		ui->textBrowser->setText(user.getData());
+		ui->textBrowser->append(user.curHand.getData());
 	}
 
 	return result;
@@ -237,11 +237,11 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 cv::Mat MainWindow::trainHand( const cv::Mat img )
 {
 	cv::Mat result = img.clone();
-    cv::Rect captureRect;
-    if(user.isLeft())
-        captureRect = cv::Rect(6*img.cols/10, img.rows/10, 250, 250);
+	cv::Rect captureRect;
+	if(user.isLeft())
+		captureRect = cv::Rect(6*img.cols/10, img.rows/10, 250, 250);
 	else
-        captureRect = cv::Rect(img.rows/10, img.cols/10, 250, 250);
+		captureRect = cv::Rect(img.rows/10, img.cols/10, 250, 250);
 
 	rectangle(result, captureRect, COLOR_CAP_RECT, 3);
 
@@ -701,14 +701,14 @@ void MainWindow::on_check_Blur_stateChanged(int state)
 
 void MainWindow::on_checkBox_stateChanged(int state)
 {
-    if(state == Qt::Checked)
-    {
-        user.setLeft(true);
-    }
-    else
-    {
-        user.setLeft(false);
-    }
+	if(state == Qt::Checked)
+	{
+		user.setLeft(true);
+	}
+	else
+	{
+		user.setLeft(false);
+	}
 }
 
 

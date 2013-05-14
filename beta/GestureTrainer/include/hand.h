@@ -445,6 +445,10 @@ public:
 		{
 			palmPoints.push_back(contour[0][defect[2]]);
 		}
+
+		if(palmPoints.empty())
+			return binaryImg;
+
 		cv::minEnclosingCircle(palmPoints, newCenter, newRadius);
 		
 		cv::Mat handROI = binaryImg(boxRect);
@@ -518,6 +522,8 @@ public:
 
 	void findClass()
 	{
+		if(type == NONE)
+			return;
 		// double handMass = mom.m00;
 
 		// phRatio = palmArea/handMass;
