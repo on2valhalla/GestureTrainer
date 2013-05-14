@@ -91,16 +91,24 @@ cv::Mat HandDetector::findHand(const cv::Mat colorImg, const cv::Mat binImg)
 		}
 	}
 	
-	if(!maxContour.empty())
+	if(maxContour.empty())
+		lastHand = Hand();
+	else
+	{
 		approxPolyDP(maxContour, maxContour, 2, true);
 
-	lastHand = Hand(maxContour);
-	// lastHand.eliminateWrist(binImg);
+		// QString str = "find: ";
+		// for(cv::Point c : maxContour)
+		// 	str.append(QString(" (%1, %2) ").arg(c.x).arg(c.y));
+		// qDebug() << str;
+
+		lastHand = Hand(maxContour);
+		// lastHand.eliminateWrist(binImg);
 
 
-	// lastHand.draw(resultImg);
-	//------------------END Find Hand--------------------
-
+		// lastHand.draw(resultImg);
+		//------------------END Find Hand--------------------
+	}
 
 	return resultImg;
 }
