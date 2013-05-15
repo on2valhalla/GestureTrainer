@@ -1,10 +1,9 @@
-Hey Linds,
 
 
-  I just wanted to put a little info here to get you started.
 
 
-First, you might want to check out my GesturePasswords repo, because a lot of the code that I am going to use in the first parts of this are from that project. The code is not too well documented, but with the readme and project writeup you should be able to make sense of what is going on.
+
+Library Installation instructions
 
 To get everything set up right:
 
