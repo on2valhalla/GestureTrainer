@@ -41,7 +41,7 @@ cv::Mat SkinDetector::processHSV(const cv::Mat &hsvImg)
 	//filtering parameter, increase size for greater effect
 	// cv::Mat morpElement(5,5,CV_8U,cv::Scalar(1));
 	cv::Mat morpElement = 
-		cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9,9), cv::Point(4,4));
+		cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5,5), cv::Point(4,4));
 
 	//current morphological processing functions to 
 	//close the skin blobs
@@ -52,7 +52,7 @@ cv::Mat SkinDetector::processHSV(const cv::Mat &hsvImg)
 	if(dilate)
 		cv::dilate(resultImg, resultImg, morpElement);
 	if(blur)
-		cv::GaussianBlur(resultImg, resultImg, cv::Size(3,3), 0);
+		cv::GaussianBlur(resultImg, resultImg, cv::Size(5,5), 0);
 	
 
 	//optional morphological processing is helpful

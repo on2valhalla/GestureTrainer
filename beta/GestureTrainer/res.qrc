@@ -3,5 +3,12 @@
         <file>img/fist.jpg</file>
         <file>img/palm.fingers.jpg</file>
         <file>prefs/location.prefs.dat</file>
+        <file>img/goal/Y.jpg</file>
+        <file>img/goal/W.jpg</file>
+        <file>img/goal/V.jpg</file>
+        <file>img/goal/T.jpg</file>
+        <file>img/goal/L.jpg</file>
+        <file>img/goal/I.jpg</file>
+        <file>img/goal/A.jpg</file>
     </qresource>
 </RCC>

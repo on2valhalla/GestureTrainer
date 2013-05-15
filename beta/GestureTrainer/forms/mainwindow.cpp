@@ -197,10 +197,10 @@ cv::Mat MainWindow::processHand( const cv::Mat color, const cv::Mat binary )
 	// display hand ROI in small window
 	user.setCurHand(HandDetectController::getInstance()->getLastHand());
 	cv::namedWindow("fingerIMG");
-	cv::Mat handDrawing = user.curHand.findFingers(
-		HandDetectController::getInstance()->getBlobImage());
+	cv::Mat handDrawing = user.curHand.findFingers();
 	cv::imshow("fingerIMG", handDrawing);
-	return HandDetectController::getInstance()->getLastResult();
+	return user.curHand.draw(
+				HandDetectController::getInstance()->getLastResult());
 }
 
 /*
@@ -226,22 +226,22 @@ cv::Mat MainWindow::detectHand( const cv::Mat img )
 //										.arg(user.fist.getB())
 //                                        .arg(user.spread.getB()));
 
-        ui->textBrowser->setText(user.getData());
-        ui->textBrowser->append(user.curHand.getData());
+		ui->textBrowser->setText(user.getData());
+		ui->textBrowser->append(user.curHand.getData());
 	}
 
 	return result;
 
 }
 
-cv::Mat MainWindow::trainHand( const cv::Mat img )
+cv::Mat MainWindow::measureHands( const cv::Mat img )
 {
 	cv::Mat result = img.clone();
-    cv::Rect captureRect;
-    if(user.isLeft())
-        captureRect = cv::Rect(6*img.cols/10, img.rows/10, 250, 250);
+	cv::Rect captureRect;
+	if(user.isLeft())
+		captureRect = cv::Rect(6*img.cols/10, img.rows/10, 250, 250);
 	else
-        captureRect = cv::Rect(img.rows/10, img.cols/10, 250, 250);
+		captureRect = cv::Rect(img.rows/10, img.cols/10, 250, 250);
 
 	rectangle(result, captureRect, COLOR_CAP_RECT, 3);
 
@@ -252,6 +252,62 @@ cv::Mat MainWindow::trainHand( const cv::Mat img )
 
 
 	return result;
+}
+
+cv::Mat MainWindow::trainUser(cv::Mat img)
+{
+	cv::Mat binary = processSkin(img);
+	cv::Mat result = processHand(img, binary);
+
+	if( user.curHand.isNone() )
+		return img;
+    else if ( user.curHand.getType().toStdString() == curGoalSet.back())
+	{
+		numSuccesses++;
+		if(numSuccesses >= 10)
+		{
+			//VICTORY
+            QString str = QString("\nSuccess, you have shown the letter %1.")
+                    .arg(curGoalSet.back().c_str());
+			ui->feedbackBrowser->append(str);
+			numSuccesses = 0;
+			
+            curGoalSet.pop_back();
+
+			if(curGoalSet.empty())
+			{
+				// Training is done
+				str = QString("Congratulations, you have finished the training"
+							" corpus. Press the training button to begin again"
+							" or step aside and let someone else train.");
+                ui->feedbackBrowser->setText(str);
+                on_pushButton_Training_clicked();
+				return img;
+			}
+
+
+			std::string gesture = curGoalSet.back();
+			curType = Hand::translateType(gesture);
+
+            str = QString::fromStdString(goalDir +
+							gesture + imgExtension);
+			// qDebug() << str;
+
+			QPixmap img_pix(str);
+			ui->label_Goal->setPixmap(img_pix.scaled(
+					ui->label_Goal->size(), Qt::KeepAspectRatio));
+
+		}
+		//CONTINUATION
+	}
+	else
+	{
+		//FAILURE
+		numSuccesses = 0;
+	}
+	
+
+	return img;
 }
 
 void MainWindow::loadDefaultHands()
@@ -333,9 +389,11 @@ void MainWindow::updateTimer()
 	if(backProcess)
 		result = processSkin(img);
 	else if(measureHand)
-		result = trainHand(img);
+		result = measureHands(img);
 	else if(handDetect)
 		result = detectHand(img);
+	else if(training)
+		result = trainUser(img);
 
 	if (!result.empty())
 		img = result;
@@ -359,16 +417,19 @@ void MainWindow::on_tabWidget_currentChanged(int index)
 			histEnable = false;
 			handDetect = false;
 			measureHand = false;
+			training = false;
 			break;
 		case BACKGROUND_TAB:
 			handDetect = false;
 			measureHand = false;
+			training = false;
 			break;
 		case MEASURE_TAB:
 			backProcess = false;
 			histEnable = false;
 			handDetect = false;
 			measureHand = true;
+			training = false;
 			user.fist = Hand();
 			user.spread = Hand();
 			break;
@@ -376,6 +437,16 @@ void MainWindow::on_tabWidget_currentChanged(int index)
 			backProcess = false;
 			histEnable = false;
 			measureHand = false;
+			training = false;
+			break;
+		case TRAIN_TAB:
+			backProcess = false;
+			histEnable = false;
+			measureHand = false;
+			handDetect = false;
+			// copy the total gestures to the current set
+			curGoalSet = goalGestures;
+			ui->pushButton_Training->setText("Begin Training");
 			break;
 		default:
 			break;
@@ -451,7 +522,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 		}
 		else if(user.spread.isNone())
 		{
-			user.spread = user.curHand;
+			user.setSpreadHand(user.curHand);
 			// CLear the label, done with measurement
 			QPixmap img_pix(250,250); 
 			img_pix.fill();
@@ -471,31 +542,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 	}
 }
 
-//void MainWindow::trainUser()
-//{
-//	std::vector<std::string> images;
-//	images.push_back("A"); 
-//	images.push_back("I"); 
-//	images.push_back("L"); 
-//	images.push_back("T"); 
-//	images.push_back("V"); 
-//	images.push_back("W"); 
-//	images.push_back("Y"); 
 
-//    for(std::string image : images)
-//	{
-//        QString imName = QString::fromStdString(":/goal/" + image + ".jpg");
-//        QPixmap img_pix(imName);
-//		ui->label_Goal->setPixmap(img_pix.scaled(
-//				ui->label_Goal->size(), Qt::KeepAspectRatio));
-
-//        while(!(user.contComparing(image)))
-//		{
-
-//		}
-//	}
-
-//}
 
 
 //---------Background Buttons--------------
@@ -701,14 +748,14 @@ void MainWindow::on_check_Blur_stateChanged(int state)
 
 void MainWindow::on_checkBox_stateChanged(int state)
 {
-    if(state == Qt::Checked)
-    {
-        user.setLeft(true);
-    }
-    else
-    {
-        user.setLeft(false);
-    }
+	if(state == Qt::Checked)
+	{
+		user.setLeft(true);
+	}
+	else
+	{
+		user.setLeft(false);
+	}
 }
 
 
@@ -745,5 +792,62 @@ void MainWindow::on_comboBox_currentIndexChanged(int index)
 	setSliders();
 }
 
+void MainWindow::on_pushButton_Training_clicked()
+{
+	if(timer->isActive())
+	{
+		training = !training;
+		if(training)
+		{
+			ui->pushButton_Training->setText("Pause Training");
+
+			if(curGoalSet.empty())
+			{
+				curGoalSet = goalGestures;
+
+				std::random_device rd;
+				std::mt19937 g(rd());
+				std::shuffle(curGoalSet.begin(), curGoalSet.end(), g);
+			}
+			
+			std::string gesture = curGoalSet.back();
+			curType = Hand::translateType(gesture);
+
+			QString str = QString::fromStdString(goalDir + 
+							gesture + imgExtension);
+			// qDebug() << str;
+
+			QPixmap img_pix(str);
+			ui->label_Goal->setPixmap(img_pix.scaled(
+					ui->label_Goal->size(), Qt::KeepAspectRatio));
+
+			str = QString("Please make the gesture signifying the letter %1"
+						" as shown below in the left-hand box")
+						.arg(gesture.c_str());
+			ui->feedbackBrowser->setText(str);
+
+			numSuccesses = 0;
+
+		}
+		else
+		{
+			if(curGoalSet.empty())
+			{
+				ui->pushButton_Training->setText("Begin Training");
+				ui->feedbackBrowser->setText("");
+			}
+			else
+			{
+				ui->pushButton_Training->setText("Resume Training");
+			}
+			// CLear the label
+			QPixmap img_pix(250,250); 
+			img_pix.fill();
+			ui->label_Example->setPixmap(img_pix);
+		}
+
+	}
+}
 // END Slots
 //##############################################################################
+
