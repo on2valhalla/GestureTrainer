@@ -241,45 +241,28 @@ public:
 			std::vector<Finger> fingers = curHand.fingers;
 
 			double subAngle = std::abs(fingers[0].angle - fingers[1].angle);
-			//qDebug() << "subAngle: " << subAngle;
+            //qDebug() << "subAngle: " << subAngle;
 
-<<<<<<< HEAD
-			double ind2mid = std::abs(index.angle-middle.angle);
-			//qDebug() << "ind2mid: " << ind2mid;
-			double thumb2pink = std::abs(thumb.angle-pinky.angle);
-			//qDebug() << "thumb2pink: " << thumb2pink;
-			double thumb2ind = std::abs(thumb.angle-index.angle);
-			//qDebug() << "thumb2ind: " << thumb2ind;
-
-
-			double subVind2mid = std::abs(subAngle - ind2mid);
-			// qDebug() << "subVind2mid: " << subVind2mid; 
-			double subVthumb2pink = std::abs(subAngle - thumb2pink);
-			// qDebug() << "subVthumb2pink: " << subVthumb2pink;
-			double subVthumb2ind = std::abs(subAngle - thumb2ind);
-			// qDebug() << "subVthumb2ind: " << subVthumb2ind;
-=======
 			double subVind2mid = std::abs(subAngle - std::abs(index.angle-middle.angle));
-			qDebug() << "subVind2mid: " << subVind2mid; 
+//			qDebug() << "subVind2mid: " << subVind2mid;
 			double subVthumb2pink = std::abs(subAngle - std::abs(thumb.angle-pinky.angle));
-			qDebug() << "subVthumb2pink: " << subVthumb2pink;
+//			qDebug() << "subVthumb2pink: " << subVthumb2pink;
 			double subVthumb2ind = std::abs(subAngle - std::abs(thumb.angle-index.angle));
-			qDebug() << "subVthumb2ind: " << subVthumb2ind;
->>>>>>> recognition
+//			qDebug() << "subVthumb2ind: " << subVthumb2ind;
 			
 
 			if(subVind2mid < subVthumb2pink)
 			{
-                if((subVind2mid < subVthumb2ind))
-                        curHand.type = V;
-                else
-                {
+//                if((subVind2mid < subVthumb2ind))
+//                        curHand.type = V;
+//                else
+//                {
                     if((fingers[0].angle > 2.2) || (fingers[1].angle > 2.2)
                         || (fingers[0].angle < 0.5) || (fingers[1].angle < 0.5))
                             curHand.type = L;
                     else
                         curHand.type = V;
-                 }
+//                 }
 
 			}
 			else if(subVthumb2pink < subVthumb2ind)
@@ -331,16 +314,6 @@ public:
 			defects.erase(defects.begin() + minDefect);
 		}
 
-<<<<<<< HEAD
-		// cv::Vec4i leftMost = defects[defects.size() - 1];
-		// cv::Vec4i rightMost = defects[0];
-
-		// if(leftMost[3]/256.0 < rightMost[3]/256.0)
-		// 	orient = LEFT;
-		// else
-		// 	orient = RIGHT;
-=======
->>>>>>> recognition
 	}
 
 	void radiusSmoothing()

@@ -264,7 +264,7 @@ cv::Mat MainWindow::trainUser(cv::Mat img)
     else if ( user.curHand.getType().toStdString() == curGoalSet.back())
 	{
 		numSuccesses++;
-		if(numSuccesses >= 3)
+		if(numSuccesses >= 10)
 		{
 			//VICTORY
             QString str = QString("\nSuccess, you have shown the letter %1.")
@@ -280,8 +280,8 @@ cv::Mat MainWindow::trainUser(cv::Mat img)
 				str = QString("Congratulations, you have finished the training"
 							" corpus. Press the training button to begin again"
 							" or step aside and let someone else train.");
-				ui->feedbackBrowser->setText(str);
-				on_pushButton_Training_clicked();
+                ui->feedbackBrowser->setText(str);
+                on_pushButton_Training_clicked();
 				return img;
 			}
 
@@ -832,14 +832,18 @@ void MainWindow::on_pushButton_Training_clicked()
 		else
 		{
 			if(curGoalSet.empty())
+			{
 				ui->pushButton_Training->setText("Begin Training");
+				ui->feedbackBrowser->setText("");
+			}
 			else
+			{
 				ui->pushButton_Training->setText("Resume Training");
+			}
 			// CLear the label
 			QPixmap img_pix(250,250); 
 			img_pix.fill();
 			ui->label_Example->setPixmap(img_pix);
-			ui->feedbackBrowser->setText("");
 		}
 
 	}

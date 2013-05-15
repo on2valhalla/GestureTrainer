@@ -694,12 +694,12 @@ public:
 
 		///QString str = QString("%1").arg(mom.m00);
 
-		for(unsigned int i = 0; i < fingers.size(); i++)
-		{
-			QString str =  QString::number(i);
-			putText(image, str.toStdString(), (fingers[i].tip + boxRect.tl()),
-					cv::FONT_HERSHEY_COMPLEX_SMALL, 5, cv::Scalar(0,0,0));
-		}
+//		for(unsigned int i = 0; i < fingers.size(); i++)
+//		{
+//			QString str =  QString::number(i);
+//			putText(image, str.toStdString(), (fingers[i].tip + boxRect.tl()),
+//					cv::FONT_HERSHEY_COMPLEX_SMALL, 5, cv::Scalar(0,0,0));
+//		}
 
 		// for(unsigned int i = 0; i < contour[0].size(); i+10)
 		// {
@@ -717,7 +717,7 @@ public:
 
 	void displayType(cv::Mat image)
 	{
-		putText(image, getType().toStdString(), cv::Point(30,30), 
+        putText(image, getType().toStdString(), cv::Point(20,60),
 			cv::FONT_HERSHEY_COMPLEX_SMALL, 3, HALF_RED, 8);
 	}
 
